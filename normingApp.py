@@ -323,7 +323,7 @@ class NormSpectra(tkinter.Tk):
 
     def onAlreadyNormed(self,reprint = True):
         if self.ifAlreadyNormed.get() == 1:
-            print("Spectrum is already normed!!!")
+            # print("Spectrum is already normed!!!")
             self.appLogic.ifOnNormedSpectrum(True)
             self.bttn11['state'] = 'disabled'
             self.bttn21['state'] = 'disabled'

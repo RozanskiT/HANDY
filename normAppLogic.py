@@ -1,23 +1,21 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-
-"""
-DESCRIPTION
-
-
-"""
 import numpy as np
 import pandas as pd
 import copy
 from scipy.interpolate import Akima1DInterpolator
 import matplotlib.pyplot as plt
-# from astropy.io import fits as pyfits
 from PyAstronomy import pyasl
 
 import spectrum as sp
 import RegionLogic
 import radialVelocity
 import specInterface
+
+"""
+DESCRIPTION
+
+"""
 
 class normAppLogic:
 

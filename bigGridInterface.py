@@ -4,6 +4,7 @@ import pandas as pd
 import glob
 import numpy as np
 import re
+import os
 import time
 import matplotlib.pyplot as plt
 import itertools
@@ -16,25 +17,26 @@ DESCRIPTION
 
 class BigGridSynthesizer:
     def __init__(self):
-        # self.bigGridFolder="/home/tomasz/studia/Astronomia/licencjat/finalProgram/BigGridNew/"
-        self.bigGridFolder="/home/tomasz/studia/Astronomia/normProg/BigGridNew/"
-        self.wave=self.loadRefWave()
-        self.allFiles=self.getFileList()
+        dirname = os.path.dirname(os.path.abspath(__file__))
+        self.bigGridFolder = dirname + "/bigGrid/"
+        self.wavelengthFileName = self.bigGridFolder + "refWave.dat"
+        self.wave = self.loadRefWave()
+        self.allFiles = self.getFileList()
         self.spectraList = self.getParams(self.allFiles)
-
 
     def getFileList(self):
         """
         List all model files available in grid
         """
-        return glob.glob(self.bigGridFolder+"*")
+        return glob.glob(self.bigGridFolder+"*.norm")
 
     def loadRefWave(self):
-        # filename="/home/tomasz/studia/Astronomia/licencjat/finalProgram/refWave.dat"
-        filename="/home/tomasz/studia/Astronomia/normProg/refWave.dat"
         # filename="./refWave.dat"
-
-        df=pd.read_table(filename,header=None,delim_whitespace=True,comment='#')
+        df = pd.read_table(self.wavelengthFileName,
+                            header=None,
+                            delim_whitespace=True,
+                            comment='#',
+                            )
         return df[0].values
 
     def getParams(self,fileNames):
@@ -45,7 +47,6 @@ class BigGridSynthesizer:
         gridSpectra=[]
         for f in fileNames:
             num=regexNum.findall(f)
-            #print(num)
             gridSpectra.append([float(num[1]),float(num[2])/100.,float(num[0]),float(num[3])])
         return np.asarray(gridSpectra)
 
