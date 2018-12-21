@@ -20,7 +20,7 @@ DESCRIPTION
 class normAppLogic:
 
     def __init__(self,):
-        self.continuumRegionsLogic = RegionLogic.RegionLogic()
+        self.continuumRegionsLogic = regionLogic.RegionLogic()
         self.radialVelocityEstimator = radialVelocity.RadialVelocity()
         self.specSynthesizer = specInterface.SynthesizeSpectrum()
 
