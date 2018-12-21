@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from PyAstronomy import pyasl
 
 import spectrum as sp
-import RegionLogic
+import regionLogic
 import radialVelocity
 import specInterface
 
