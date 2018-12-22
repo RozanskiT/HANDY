@@ -48,7 +48,7 @@ class NormSpectra(tkinter.Tk):
     def createWindow(self):
         self.frame = tkinter.Frame(self)
         self.frame.pack(fill=tkinter.BOTH, expand=1)
-        self.wm_title("Norm spectrum")
+        self.wm_title("HANDY - Handy tool for spectra normalization")
 
     def createMenu(self):
 
@@ -70,6 +70,8 @@ class NormSpectra(tkinter.Tk):
                               command=self.onSaveNormedSpectrum)
         fileMenu2.add_command(label="Save continuum",\
                               command=self.onSaveContinuum)
+        fileMenu2.add_command(label="Save velocity corrected spetrum",\
+                              command=self.onSaveVelocityCorrectedSpectrum)
 
     def onOpenSpectrum(self):
         dirname = os.getcwd()
@@ -149,6 +151,14 @@ class NormSpectra(tkinter.Tk):
         if fileName and self.appLogic.spectrum.wave is not None:
             self.appLogic.continuumRegionsLogic.saveRegionsFile(self.appLogic.spectrum,\
                                                                 fileName)
+    def onSaveVelocityCorrectedSpectrum(self):
+        initialName = "out.norm"
+        if self.appLogic.spectrum.name is not None:
+            initialName = self.appLogic.spectrum.name.split('.')[-2]+"_rv.dat"
+        fileName = filedialog.asksaveasfilename(initialfile=initialName)
+        if fileName and self.appLogic.spectrum.wave is not None:
+            self.appLogic.saveSpectrum(fileName)
+
 
     def createControls(self):
         # Create several frames for grouping buttons
