@@ -45,6 +45,7 @@ class normAppLogic:
                                                   colWave=colWave,\
                                                   colFlux=colFlux,\
                                                   skipRows=skipRows)
+
         else:
             self.spectrum = sp.Spectrum()
             """ Check more at
@@ -52,6 +53,8 @@ class normAppLogic:
             https://www.hs.uni-hamburg.de/DE/Ins/Per/Czesla/PyA/PyA/pyaslDoc/aslDoc/readFitsSpec.html
             """
             self.spectrum.wave, self.spectrum.flux = pyasl.read1dFitsSpec(fileName)
+            # self.spectrum.wave = self.spectrum.wave.byteswap().newbyteorder()
+            self.spectrum.flux = self.spectrum.flux.byteswap().newbyteorder() #TODO PyAstronomy bug
             self.spectrum.name = fileName
         self.radialVelocity = 0.0
         self.oryginalWavelength = copy.deepcopy(self.spectrum.wave)
