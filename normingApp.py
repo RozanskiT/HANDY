@@ -75,7 +75,7 @@ class NormSpectra(tkinter.Tk):
 
     def onOpenSpectrum(self):
         dirname = os.getcwd()
-        ftypes = [('FITS files', '*fits'),('Plain text', '*.txt *.dat'),('All files', '*')]
+        ftypes = [('All files', '*'),('FITS files', '*fits'),('Plain text', '*.txt *.dat')]
         answer = filedialog.askopenfilenames(title="Open spectrum...", initialdir=dirname, filetypes=ftypes)
         if answer:
             fileName = answer[0]
