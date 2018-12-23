@@ -11,5 +11,10 @@ DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd -P )"
 # Default execution
 SVE='python "'$DIR'/normingApp.py"'
 
+source activate HANDY-env
+
 echo Calling $SVE "$@"
+# which python
 eval $SVE "$@"
+
+source deactivate
