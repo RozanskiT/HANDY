@@ -68,8 +68,13 @@ in your terminal.
 ## Tutorial
 
 Not yet availible, but:
+* Left mause button - create ranges
+* Right mouse button - remove the neares range
+* Scroll wheel click - change active region to the nearest to cursor 
 
-
+![Basic usage of HANDY](docsFiles/usageMovie1.gif)
+![Basic usage of HANDY](docsFiles/usageMovie1.gif)
+![Basic usage of HANDY](docsFiles/usageMovie1.gif)
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.txt](LICENSE.txt) file for details
