@@ -7,6 +7,7 @@ HANDY is interactive python3 program for spectrum normalization. The normalizati
   <a href="#prerequisites">Prerequisites</a> •
   <a href="#download">Download</a> •
   <a href="#installing">Installing</a> •
+  <a href="#tutorial">Tutorial</a> •
   <a href="#license">License</a> •
   <a href="#acknowledgments">Acknowledgments</a>
 </p>
@@ -21,7 +22,6 @@ HANDY is interactive python3 program for spectrum normalization. The normalizati
   - NLTE line blanketed model atmospheres of hot stars. I. Hybrid Complete Linearization/Accelerated Lambda Iteration Method, 1995, Hubeny, I., & Lanz, T., Astrophysical Journal, 439, 875
 * Radial velocity correction 
 * Developed and tested on Linux
-
 
 ## Getting Started
 
@@ -59,11 +59,16 @@ After that you may want to make symbolic link in your ~/bin/ directory to HANDY.
 ```
 ln -s ~/repos/HANDY/HANDY.sh ~/bin/HANDY
 ```
-Then you should be able to simply run the program by running simple:
+Then you should be able to simply run the program by running:
 ```
 HANDY
 ```
 in your terminal.
+
+## Tutorial
+
+Not yet availible, but:
+
 
 ## License
 
@@ -71,8 +76,8 @@ This project is licensed under the MIT License - see the [LICENSE.txt](LICENSE.t
 
 ## Acknowledgments
 
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
+* [iSpec](http://adsabs.harvard.edu/abs/2014A%26A...569A.111B), by. S. Blanco-Cuaresma
+* [PyAstronomy](https://github.com/sczesla/PyAstronomy)
+* [SciPy](https://www.scipy.org/)
 <!---
 -->
