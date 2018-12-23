@@ -1,7 +1,7 @@
 # HANDY - Handy tool for spectra normalization
 
 HANDY is interactive python3 program for spectrum normalization. 
-![Basic usage of HANDY](HANDY/docsFiles/usageMovie1.gif)
+![Basic usage of HANDY](docsFiles/usageMovie1.gif)
 <!---
 ## Getting Started
 
