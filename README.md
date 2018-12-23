@@ -1,6 +1,6 @@
 # HANDY - Handy tool for spectra normalization
 
-HANDY is interactive python3 program for spectrum normalization. 
+HANDY is interactive python3 program for spectrum normalization. The normalization process is based on "regions" and "ranges". "Ranges" are continuum parts defined manually by user (or uploaded from file from previous program run) which will be used for continuum level fit. "Regions" are groups of ranges for whom single chebyshev polynomial are fitted. Polynomial fits are connected with the use of Akima'a spline interpolation. "Regions" are usually of the size of order of given echelle spectrograph, approximately 100$\AA$. The program offers graphical access to theoretical grid of spectra for obtaining an idea about processed star atmosphere parameters and interface for radial velocity correction. 
 ![Basic usage of HANDY](docsFiles/usageMovie1.gif)
 <!---
 ## Getting Started
