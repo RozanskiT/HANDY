@@ -4,12 +4,11 @@ HANDY is interactive python3 program for spectrum normalization. The normalizati
 
 <p align="center">
   <a href="#key-features">Key Features</a> •
-  <a href="#how-to-use">How To Use</a> •
-  <a href="#how-to-use">How To Use</a> •
+  <a href="#prerequisites">Prerequisites</a> •
   <a href="#download">Download</a> •
-  <a href="#credits">Credits</a> •
-  <a href="#related">Related</a> •
-  <a href="#license">License</a>
+  <a href="#installing">Installing</a> •
+  <a href="#license">License</a> •
+  <a href="#acknowledgments">Acknowledgments</a>
 </p>
 
 ![Basic usage of HANDY](docsFiles/usageMovie1.gif)
@@ -56,11 +55,15 @@ Verify if enviroment is installed correctly:
 ```
 conda list
 ```
-
-## Deployment
-
-Add additional notes about how to deploy this on a live system
-
+After that you may want to make symbolic link in your ~/bin/ directory to HANDY.sh file to be able to easly run the program in whole system. Eg. on my system:
+```
+ln -s ~/repos/HANDY/HANDY.sh ~/bin/HANDY
+```
+Then you should be able to simply run the program by running simple:
+```
+HANDY
+```
+in your terminal.
 
 ## License
 
