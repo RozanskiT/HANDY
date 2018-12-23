@@ -34,7 +34,7 @@ HANDY is interactive python3 program for spectrum normalization. The normalizati
 
 Two steps:
 * Clone the repository or download it as the .zip file
-* Download and untar folder with grid into your project catalogue
+* Download and untar folder with grid into your project catalog
   - Can be downloaded from : https://drive.google.com/open?id=1HoGdsCiT7-sRO5a_YqBjVRrTetkxNvwg
   
 ### Installing
@@ -43,7 +43,7 @@ You need python3 with all needed packages.
 
 The easiest way to work with HANDY is with [Conda enviroment manager](https://conda.io/docs/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file):
 
-Run in HANDY folder:
+Run in HANDY catalog:
 ```
 conda env create -f environment.yml
 ```
@@ -59,7 +59,7 @@ After that you may want to make symbolic link in your ~/bin/ directory to HANDY.
 ```
 ln -s ~/repos/HANDY/HANDY.sh ~/bin/HANDY
 ```
-Then you should be able to simply run the program by running:
+Then you should be able to simply run the program by executing:
 ```
 HANDY
 ```
