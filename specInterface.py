@@ -26,11 +26,10 @@ class SynthesizeSpectrum:
     def __init__(self):
 
         self.grid = bigGridInterface.BigGridSynthesizer()
-        self.instrumentalFWHM = 0.1
 
     def synthesizeSpectrum(self,parameters,minWave = 3500, maxWave = 7000):
 
-        teff,logg,vmic,me,vsini,vmac = parameters
+        teff,logg,vmic,me,vsini,vmac,resolution = parameters
         spectrum = self.grid.interpolateSpectrum(teff,logg,me,vmic)
 
         # get anly needed range in wavelength
@@ -43,9 +42,10 @@ class SynthesizeSpectrum:
         spectrum.vsini = vsini
         spectrum.vmac = vmac
 
-        # instrumental broadening
-        # FWHM_before=spectrum.wave[1]-spectrum.wave[0]
-        # spectrum.flux=self.instrumentalSmooth(spectrum.flux,FWHM_before,self.instrumentalFWHM)
+        # instrumental broadening CONVOLUTION
+        FWHM_before = spectrum.wave[1] - spectrum.wave[0]
+        instrumentalFWHM = 5000. / resolution
+        spectrum.flux = self.instrumentalSmooth(spectrum.flux,FWHM_before,instrumentalFWHM)
 
         return spectrum
 
@@ -55,14 +55,17 @@ class SynthesizeSpectrum:
         if FWHM_after < FWHM_before:
             print("FWHM can only grow. ",FWHM_before ,FWHM_after )
             return flux
-        sigma=np.sqrt(FWHM_after**2 - FWHM_before**2)
-        N_sigma=sigma/FWHM_before
-        N=int(10*N_sigma)
+        sigma = np.sqrt(FWHM_after**2 - FWHM_before**2)
+        N_sigma = sigma/FWHM_before
+        N = int(10*N_sigma)
         if not N%2:
-            N+=1
-        gaussianKernel=gaussian(N,std=N_sigma)
-        gaussianKernel/=sum(gaussianKernel)
-        smoothed=fftconvolve(flux,gaussianKernel, mode='same')
+            N += 1
+        gaussianKernel = gaussian(N,std=N_sigma)
+        gaussianKernel /= sum(gaussianKernel)
+
+        smoothed = fftconvolve(1.0 - flux,gaussianKernel, mode='same')
+        smoothed = 1.0 - smoothed
+
         return smoothed
     #FROM ISPEC
     #-----------------------------------------------------------------------
@@ -271,8 +274,9 @@ def testInterpolateSpectrum():
     vmic = 5
     vsini = 0
     vmac = 0
+    resolution = 10000
 
-    parameters = teff,logg,vmic,me,vsini,vmac
+    parameters = teff,logg,vmic,me,vsini,vmac,resolution
     start=time.time()
     s = bg.synthesizeSpectrum(parameters)
     end=time.time()
