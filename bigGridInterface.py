@@ -68,34 +68,34 @@ class BigGridSynthesizer:
         if out of grid returns None
         surronding may consists of 1,2,4,8 or 16 spectra
         """
-        allTeff=np.unique([s[0] for s in self.spectraList])
-        alllogg=np.unique([s[1] for s in self.spectraList])
-        allme  =np.unique([s[2] for s in self.spectraList])
-        allvmic  =np.unique([s[3] for s in self.spectraList])
+        allTeff = np.unique([s[0] for s in self.spectraList])
+        alllogg = np.unique([s[1] for s in self.spectraList])
+        allme = np.unique([s[2] for s in self.spectraList])
+        allvmic = np.unique([s[3] for s in self.spectraList])
 
-        surTeff=np.unique([self.findNearestLowerThan(teff,allTeff)  ,self.findNearestGreaterThan(teff,allTeff)])
-        surlogg=np.unique([self.findNearestLowerThan(logg,alllogg)  ,self.findNearestGreaterThan(logg,alllogg)])
-        surme  =np.unique([self.findNearestLowerThan(me,allme)      ,self.findNearestGreaterThan(me,allme)]    )
-        survmic=np.unique([self.findNearestLowerThan(vmic,allvmic)  ,self.findNearestGreaterThan(vmic,allvmic)])
+        surTeff = np.unique([self.findNearestLowerThan(teff,allTeff),self.findNearestGreaterThan(teff,allTeff)])
+        surlogg = np.unique([self.findNearestLowerThan(logg,alllogg),self.findNearestGreaterThan(logg,alllogg)])
+        surme = np.unique([self.findNearestLowerThan(me,allme),self.findNearestGreaterThan(me,allme)])
+        survmic = np.unique([self.findNearestLowerThan(vmic,allvmic),self.findNearestGreaterThan(vmic,allvmic)])
 
-        if len(surTeff)==1 and surTeff[0]!=teff:
-            surTeff=[]
-        if len(surlogg)==1 and surlogg[0]!=logg:
-            surlogg=[]
-        if len(surme)==1 and surme[0]!=me:
-            surme=[]
-        if len(survmic)==1 and survmic[0]!=vmic:
-            survmic=[]
-
-        surAll=list(itertools.product(surTeff,surlogg,surme,survmic))
+        if len(surTeff) == 1 and surTeff[0] != teff:
+            surTeff = []
+        if len(surlogg) == 1 and surlogg[0] != logg:
+            surlogg = []
+        if len(surme) == 1 and surme[0] != me:
+            surme = []
+        if len(survmic) == 1 and survmic[0]!=vmic:
+            survmic = []
+        # TODO low metalicity bug, problems with surrounding
+        surAll = list(itertools.product(surTeff,surlogg,surme,survmic))
         #abundances={'He':-0.1,'He':-0.5,'He':-1,'He':-2}
 
-        idx=0
+        idx = 0
         for single in surAll:
             for i,s in enumerate(self.spectraList):
                 #print(s ,single)
                 if np.array_equal(single,s):
-                    idx+=1
+                    idx += 1
         ifAllTrue = True if (idx == len(surAll) and surAll!=[] ) else False
         #ifAllTrue=any(any((np.asarray(self.spectraList) == np.asarray(single)).all(1)) for single in surAll)
         if ifAllTrue:

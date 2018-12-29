@@ -30,6 +30,9 @@ class SynthesizeSpectrum:
     def synthesizeSpectrum(self,parameters,minWave = 3500, maxWave = 7000):
 
         teff,logg,vmic,me,vsini,vmac,resolution = parameters
+        # change units of metallicity, to units used in SYNSPEC
+        me = 10**me
+
         spectrum = self.grid.interpolateSpectrum(teff,logg,me,vmic)
 
         # get anly needed range in wavelength

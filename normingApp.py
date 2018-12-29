@@ -222,7 +222,7 @@ class NormSpectra(tkinter.Tk):
         self.teffVar = tkinter.DoubleVar(value = 22000)
         self.loggVar = tkinter.DoubleVar(value = 3.8)
         self.vmicVar = tkinter.DoubleVar(value = 2)
-        self.meVar = tkinter.DoubleVar(value = 1.0)
+        self.meVar = tkinter.DoubleVar(value = 0.0)
         self.vsiniVar = tkinter.DoubleVar(value = 0)
         self.vmacVar = tkinter.DoubleVar(value = 0)
         self.resolution = tkinter.DoubleVar() # set value when initializing window
@@ -286,9 +286,9 @@ class NormSpectra(tkinter.Tk):
                                     variable = self.meVar,
                                     orient = hor,
                                     label = "me",
-                                    from_ = 0.01,
-                                    to = 2,
-                                    resolution = 0.01,
+                                    from_ = -1, #TODO work around low metallicity bug
+                                    to = 0.3,
+                                    resolution = 0.1,
                                     # length = 30,
                                     )
         self.meScale.grid(row = 0, column = 3, columnspan = 2, sticky = WENS)
