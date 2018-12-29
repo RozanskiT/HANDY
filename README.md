@@ -34,7 +34,7 @@ HANDY is interactive python3 program for spectrum normalization. The normalizati
 
 Two steps:
 * Clone the repository or download it as the .zip file
-* Download and untar folder with grid into your project catalogue
+* Download and untar folder with grid into your project catalog
   - Can be downloaded from : https://drive.google.com/open?id=1HoGdsCiT7-sRO5a_YqBjVRrTetkxNvwg
   
 ### Installing
@@ -43,7 +43,7 @@ You need python3 with all needed packages.
 
 The easiest way to work with HANDY is with [Conda enviroment manager](https://conda.io/docs/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file):
 
-Run in HANDY folder:
+Run in HANDY catalog:
 ```
 conda env create -f environment.yml
 ```
@@ -59,7 +59,7 @@ After that you may want to make symbolic link in your ~/bin/ directory to HANDY.
 ```
 ln -s ~/repos/HANDY/HANDY.sh ~/bin/HANDY
 ```
-Then you should be able to simply run the program by running:
+Then you should be able to simply run the program by executing:
 ```
 HANDY
 ```
@@ -67,14 +67,24 @@ in your terminal.
 
 ## Tutorial
 
-Not yet availible, but:
+Page with tutorial is in preparation, but:
+
+### Play with regions end ranges creation/deletion
+
 * Left mause button - create ranges
 * Right mouse button - remove the neares range
 * Scroll wheel click - change active region to the nearest to cursor 
 
-![Basic usage of HANDY](docsFiles/usageMovie1.gif)
-![Basic usage of HANDY](docsFiles/usageMovie1.gif)
-![Basic usage of HANDY](docsFiles/usageMovie1.gif)
+![Basic usage of HANDY](docsFiles/egPlayingWithRegionsAndRanges.gif)
+
+### Correcting for radial velocity
+
+![Basic usage of HANDY](docsFiles/egVRadCorrection.gif)
+
+### Loading predefined continuum file
+
+![Basic usage of HANDY](docsFiles/egLoadPredefinedContinuum.gif)
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.txt](LICENSE.txt) file for details
