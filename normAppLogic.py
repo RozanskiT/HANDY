@@ -70,8 +70,8 @@ class normAppLogic:
                                                    colFlux=colFlux,\
                                                    skipRows=skipRows)
 
-    def computeTheoreticalSpectrum(self,teff,logg,vmic,me,vsini,vmac):
-        parameters = teff,logg,vmic,me,vsini,vmac
+    def computeTheoreticalSpectrum(self,teff,logg,vmic,me,vsini,vmac,resolution):
+        parameters = teff,logg,vmic,me,vsini,vmac,resolution
         try:
             self.theoreticalSpectrum = self.specSynthesizer.synthesizeSpectrum(parameters,minWave = 3500, maxWave = 7000)
         except:

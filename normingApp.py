@@ -222,9 +222,11 @@ class NormSpectra(tkinter.Tk):
         self.teffVar = tkinter.DoubleVar(value = 22000)
         self.loggVar = tkinter.DoubleVar(value = 3.8)
         self.vmicVar = tkinter.DoubleVar(value = 2)
-        self.meVar = tkinter.DoubleVar(value = 1.0)
+        self.meVar = tkinter.DoubleVar(value = 0.0)
         self.vsiniVar = tkinter.DoubleVar(value = 0)
         self.vmacVar = tkinter.DoubleVar(value = 0)
+        self.resolution = tkinter.DoubleVar() # set value when initializing window
+        # https://stackoverflow.com/questions/41225071/python-tkinter-spinbox-seems-to-reset-the-variable-value
         hor = tkinter.HORIZONTAL
         self.teffScale = tkinter.Scale(self.controlFrameB,
                                         variable = self.teffVar,
@@ -244,24 +246,25 @@ class NormSpectra(tkinter.Tk):
                                         label = "logg",
                                         from_ = 3.0,
                                         to = 4.5,
-                                        resolution = 0.02)
+                                        resolution = 0.1)
         self.loggScale.grid(row = 1, column = 0, sticky = WENS)
 
-        self.meScale = tkinter.Scale(self.controlFrameB,
-                                    variable = self.meVar,
-                                    orient = hor,
-                                    label = "me",
-                                    from_ = 0.01,
-                                    to = 2,
-                                    resolution = 0.01)
-        self.meScale.grid(row = 1, column = 1, sticky = WENS)
+        self.vmicScale = tkinter.Scale(self.controlFrameB,
+                                        variable = self.vmicVar,
+                                        orient = hor,
+                                        label = 'vmic',
+                                        from_ = 0,
+                                        to = 15,
+                                        resolution = 1,
+                                        )
+        self.vmicScale.grid(row = 1, column = 1, sticky = WENS)
 
         self.vmacScale = tkinter.Scale(self.controlFrameB,
                                         variable = self.vmacVar,
                                         orient = hor,
                                         label = "vmac",
                                         from_ = 0,
-                                        to = 30,
+                                        to = 50,
                                         resolution = 1,
                                         length = 150,
                                         )
@@ -279,26 +282,48 @@ class NormSpectra(tkinter.Tk):
                                         )
         self.vsiniScale.grid(row = 1, column = 2, sticky = WENS)
 
-        self.vmicScale = tkinter.Scale(self.controlFrameB,
-                                        variable = self.vmicVar,
-                                        orient = hor,
-                                        label = 'vmic',
-                                        from_ = 0,
-                                        to = 15,
-                                        resolution = 1,
-                                        )
-        self.vmicScale.grid(row = 0, column = 3, sticky = WENS)
+        self.meScale = tkinter.Scale(self.controlFrameB,
+                                    variable = self.meVar,
+                                    orient = hor,
+                                    label = "me",
+                                    from_ = -1, #TODO work around low metallicity bug
+                                    to = 0.3,
+                                    resolution = 0.1,
+                                    # length = 30,
+                                    )
+        self.meScale.grid(row = 0, column = 3, columnspan = 2, sticky = WENS)
+
+        # self.resolutionScale = tkinter.Scale(self.controlFrameB,
+        #                                 variable = self.resolution,
+        #                                 orient = hor,
+        #                                 label = 'resolution',
+        #                                 from_ = 1000,
+        #                                 to = 100000,
+        #                                 resolution = 1000,
+        #                                 length = 150,
+        #                                 )
+        # self.resolutionScale = tkinter.Entry(self.controlFrameB,
+        #                         textvariable = self.resolution,
+        #                         )
+
+        self.resolutionLabel = tkinter.Label(self.controlFrameB,
+                                             text = "resolution",
+                                             )
+        self.resolutionLabel.grid(row = 1, column = 3, sticky = WENS)
+
+        self.resolutionScale = tkinter.Spinbox(self.controlFrameB,
+                                textvariable = self.resolution,
+                                values = (1000,2000,5000,10000,20000,50000,100000,np.inf),
+                                state = 'readonly',
+                                width = 7,
+                                )
+        self.resolution.set(np.inf) # Must be like that :(
+        self.resolutionScale.grid(row = 1, column = 4, sticky = WENS)
 
         self.bttnLoadTheorSpec = tkinter.Button(self.controlFrameB,\
-                                    text = "Compute spectrum",\
+                                    text = "Compute\nspectrum",\
                                     command = self.onComputeTheoreticalSpectrum)
-        self.bttnLoadTheorSpec.grid(row = 1, column = 3, sticky = WENS)
-        #
-        # self.variables1 = tkinter.Text(self.controlFrameB, width = 50, height = 5,\
-        #                                wrap = tkinter.WORD,state="disabled")
-        #
-        # self.variables1.pack(side=tkinter.LEFT,fill=tkinter.BOTH, expand=1)
-        #=======================================================================
+        self.bttnLoadTheorSpec.grid(row = 0, column = 5, rowspan = 2, sticky = WENS)
 
         self.ifSaveCorrectedvrad = tkinter.IntVar()
         self.chButtonCorrectedVRad = tkinter.Checkbutton(self.controlFrameC,
@@ -451,6 +476,7 @@ class NormSpectra(tkinter.Tk):
                                                 self.meVar.get(),
                                                 self.vsiniVar.get(),
                                                 self.vmacVar.get(),
+                                                float(self.resolution.get()),
                                                 )
         wt = self.appLogic.theoreticalSpectrum.wave if self.appLogic.theoreticalSpectrum.wave is not None else []
         ft = self.appLogic.theoreticalSpectrum.flux if self.appLogic.theoreticalSpectrum.flux is not None else []
