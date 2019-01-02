@@ -255,7 +255,7 @@ class NormSpectra(tkinter.Tk):
                                         label = "logg",
                                         from_ = 3.0,
                                         to = 4.5,
-                                        resolution = 0.1)
+                                        resolution = 0.05)
         self.loggScale.grid(row = 1, column = 0, sticky = WENS)
 
         self.vmicScale = tkinter.Scale(self.controlFrameB,
