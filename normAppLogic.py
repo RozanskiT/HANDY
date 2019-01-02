@@ -88,6 +88,10 @@ class normAppLogic:
         sp.saveSpectrum(fileName,saveSpectrum)
         print("INFO : %s saved!"%fileName)
 
+    def saveTheoreticalSpectrum(self,fileName):
+        sp.saveSpectrum(fileName,self.theoreticalSpectrum)
+        print("INFO : %s saved!"%fileName)
+
     def plotSpectrum(self):
         if self.spectrum.wave is not None:
             plt.plot(self.spectrum.wave,self.spectrum.flux)
