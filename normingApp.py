@@ -162,7 +162,7 @@ class NormSpectra(tkinter.Tk):
             self.appLogic.saveSpectrum(fileName)
 
     def onSaveTheoreticalSpectrum(self):
-        initialName = "out.synth"
+        initialName = "out.syn"
         if self.appLogic.spectrum.name is not None:
             initialName = self.appLogic.spectrum.name.split('.')[-2]+".syn"
         fileName = filedialog.asksaveasfilename(initialfile=initialName)
