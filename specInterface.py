@@ -40,6 +40,13 @@ class SynthesizeSpectrum:
         spectrum.flux = spectrum.flux[mask]
         spectrum.wave = spectrum.wave[mask]
 
+        # equal spacing
+        diff = spectrum.wave[1] - spectrum.wave[0]
+        newWave = np.arange(min(spectrum.wave),max(spectrum.wave),diff)
+        newFlux = np.interp(newWave, spectrum.wave, spectrum.flux, left=0.0, right=0.0)
+        spectrum.wave = newWave
+        spectrum.flux = newFlux
+
         # vsini and vmac CONVOLUTION
         spectrum.flux = self.addBroadeningToSpectrum(spectrum,vsini=vsini,vmac=vmac,limb_darkening_coeff=0.6)
         spectrum.vsini = vsini
@@ -58,12 +65,13 @@ class SynthesizeSpectrum:
         if FWHM_after < FWHM_before:
             print("FWHM can only grow. ",FWHM_before ,FWHM_after )
             return flux
-        sigma = np.sqrt(FWHM_after**2 - FWHM_before**2)
+        FWHM = np.sqrt(FWHM_after**2 - FWHM_before**2)
+        sigma = FWHM/2.355
         N_sigma = sigma/FWHM_before
         N = int(10*N_sigma)
         if not N%2:
             N += 1
-        gaussianKernel = gaussian(N,std=N_sigma)
+        gaussianKernel = gaussian(N, std=N_sigma)
         gaussianKernel /= sum(gaussianKernel)
 
         smoothed = fftconvolve(1.0 - flux,gaussianKernel, mode='same')
