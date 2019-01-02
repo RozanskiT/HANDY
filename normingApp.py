@@ -72,6 +72,8 @@ class NormSpectra(tkinter.Tk):
                               command=self.onSaveContinuum)
         fileMenu2.add_command(label="Save velocity corrected spetrum",\
                               command=self.onSaveVelocityCorrectedSpectrum)
+        fileMenu2.add_command(label="Save theoretical spetrum",\
+                              command=self.onSaveTheoreticalSpectrum)
 
     def onOpenSpectrum(self):
         dirname = os.getcwd()
@@ -159,6 +161,13 @@ class NormSpectra(tkinter.Tk):
         if fileName and self.appLogic.spectrum.wave is not None:
             self.appLogic.saveSpectrum(fileName)
 
+    def onSaveTheoreticalSpectrum(self):
+        initialName = "out.synth"
+        if self.appLogic.spectrum.name is not None:
+            initialName = self.appLogic.spectrum.name.split('.')[-2]+".syn"
+        fileName = filedialog.asksaveasfilename(initialfile=initialName)
+        if fileName and self.appLogic.theoreticalSpectrum.wave is not None:
+            self.appLogic.saveTheoreticalSpectrum(fileName)
 
     def createControls(self):
         # Create several frames for grouping buttons
