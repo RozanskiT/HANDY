@@ -46,6 +46,7 @@ class BigGridSynthesizer:
         regexNum = re.compile("[-+]?[.]?[\d]+(?:,\d\d\d)*[\.]?\d*(?:[eE][-+]?\d+)?")
         gridSpectra=[]
         for f in fileNames:
+            f = os.path.basename(f)
             num=regexNum.findall(f)
             gridSpectra.append([float(num[1]),float(num[2])/100.,float(num[0]),float(num[3])])
         return np.asarray(gridSpectra)
