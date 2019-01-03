@@ -345,7 +345,7 @@ class NormSpectra(tkinter.Tk):
 
         self.ifAlreadyNormed = tkinter.IntVar()
         self.workWithNormedSpectrum = tkinter.Checkbutton(self.controlFrameC,
-                                                        text = "Already\nnormed?",
+                                                        text = "Already\nnormalised\nspectrum?",
                                                         variable = self.ifAlreadyNormed,
                                                         command = self.onAlreadyNormed,
                                                         )
