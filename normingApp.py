@@ -54,7 +54,7 @@ class NormSpectra(tkinter.Tk):
 
         menu = tkinter.Menu(self)
         self.config(menu=menu)
-
+        #------------------------------------
         fileMenu1 = tkinter.Menu(menu)
         menu.add_cascade(label="Load", underline=0, menu=fileMenu1)
         fileMenu1.add_command(label="Open spectrum", command=self.onOpenSpectrum)
@@ -63,7 +63,7 @@ class NormSpectra(tkinter.Tk):
         fileMenu1.add_command(label="Load theoretical spectrum",\
                               command=self.onLoadTheoreticalSectrum)
         fileMenu1.add_command(label="Exit", underline=0, command=self.onExit)
-
+        #------------------------------------
         fileMenu2 = tkinter.Menu(menu)
         menu.add_cascade(label="Save", underline=0, menu=fileMenu2)
         fileMenu2.add_command(label="Save normed spectra",\
@@ -74,6 +74,35 @@ class NormSpectra(tkinter.Tk):
                               command=self.onSaveVelocityCorrectedSpectrum)
         fileMenu2.add_command(label="Save theoretical spetrum",\
                               command=self.onSaveTheoreticalSpectrum)
+        #------------------------------------
+        fileMenu3 = tkinter.Menu(menu)
+        menu.add_cascade(label="Grids", underline=0, menu=fileMenu3)
+        self.vlevel = tkinter.IntVar()
+        lG = self.appLogic.gridDefinitions.listAvailibleGrids()
+        self.appLogic.gridDefinitions.setChoosenGrid(lG[0])
+        for i, gridName in enumerate(lG):
+            fileMenu3.add_radiobutton(label = gridName,
+                                      var = self.vlevel,
+                                      value = i,
+                                      command = self.onChooseGrid
+                                      )
+        # self.vlevel.set(0)
+
+    def onChooseGrid(self):
+        print(self.vlevel.get())
+        # self.bttn23['state'] = 'disabled'
+        # self.bttn11['state'] = 'normal'
+        lG = self.appLogic.gridDefinitions.listAvailibleGrids()
+        # print(lG)
+        # print(lG[self.vlevel.get()])
+        self.appLogic.gridDefinitions.setChoosenGrid(lG[self.vlevel.get()])
+        d = self.appLogic.gridDefinitions.getDefinedVariables()
+        setVal = {True: 'normal', False: 'disabled'}
+        self.teffScale['state'] = setVal[d["teff"]]
+        self.loggScale['state'] = setVal[d["logg"]]
+        self.vmicScale['state'] = setVal[d["vmic"]]
+        self.meScale['state'] = setVal[d["me"]]
+        # print(d)
 
     def onOpenSpectrum(self):
         dirname = os.getcwd()

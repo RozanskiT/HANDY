@@ -16,10 +16,19 @@ DESCRIPTION
 """
 
 class BigGridSynthesizer:
-    def __init__(self):
+    def __init__(self,
+                folder = "/bigGrid/",
+                refWave = "refWave.dat",
+                paramsDict = {"teff":True,"logg":True,"vmic":True,"me":True},
+                paramsNum = {"teff":0,"logg":1,"vmic":3,"me":2},
+                paramsMult = {"teff":1,"logg":100,"vmic":1,"me":1},
+                ):
+        self.paramsDict = paramsDict
+        self.paramsNum = paramsNum
+        self.paramsMult = paramsMult
         dirname = os.path.dirname(os.path.abspath(__file__))
-        self.bigGridFolder = dirname + "/bigGrid/"
-        self.wavelengthFileName = self.bigGridFolder + "refWave.dat"
+        self.bigGridFolder = dirname + folder
+        self.wavelengthFileName = self.bigGridFolder + refWave
         self.wave = self.loadRefWave()
         self.allFiles = self.getFileList()
         self.spectraList = self.getParams(self.allFiles)
@@ -52,10 +61,10 @@ class BigGridSynthesizer:
         return np.asarray(gridSpectra)
 
     def getFilenameFromPoint(self,point):
-        teff=point[0]
-        logg=point[1]*100
-        me=point[2]
-        vmic=point[3]
+        teff = point[0]
+        logg = point[1]*100
+        me = point[2]
+        vmic = point[3]
         return self.bigGridFolder+"m%3.2ft%dg%dv%.1f_3500_7000.norm"%(me,teff,logg,vmic)
 
     def readWave(self,point):
@@ -168,32 +177,6 @@ class BigGridSynthesizer:
 
         return Spectrum(wave=self.wave,flux=interpFlux)
 
-def testInterpolateSpectrum2():
-    bg=BigGridSynthesizer()
-    import collections
-    teff,logg,vmic,me = 25000,3.5,5,0.5
-    me=np.arange(0.1,2,0.2)
-    if not isinstance(teff, collections.Iterable):
-        teff=[teff]
-    if not isinstance(logg, collections.Iterable):
-        logg=[logg]
-    if not isinstance(vmic, collections.Iterable):
-        vmic=[vmic]
-    if not isinstance(me, collections.Iterable):
-        me=[me]
-
-    parameters=list(itertools.product(teff,logg,me,vmic))
-
-    print(parameters)
-    for (teff,logg,me,vmic) in parameters:
-        print(teff,logg,me,vmic)
-        s=bg.interpolateSpectrum(teff,logg,me,vmic)
-        print(s)
-        plt.plot(s.wave,s.flux,label=bg.getFilenameFromPoint((teff,logg,me,vmic)))
-
-    plt.legend()
-    plt.show()
-
 def testInterpolateSpectrum():
     bg=BigGridSynthesizer()
     teff=25100
@@ -228,6 +211,5 @@ def testInit():
 def main():
     #testFinSurronding()
     testInterpolateSpectrum()
-    #testInterpolateSpectrum2()
 if __name__ == '__main__':
 	main()

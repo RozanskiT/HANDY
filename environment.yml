@@ -1,4 +1,6 @@
 name: HANDY-env
+channels:
+- anaconda
 dependencies:
 - python=3.7
 - matplotlib
@@ -6,5 +8,6 @@ dependencies:
 - numpy
 - scipy
 - astropy
+- pyyaml
 - pip:
   - PyAstronomy

@@ -11,6 +11,7 @@ import spectrum as sp
 import regionLogic
 import radialVelocity
 import specInterface
+import gridDefinitionsRead
 
 """
 DESCRIPTION
@@ -20,9 +21,12 @@ DESCRIPTION
 class normAppLogic:
 
     def __init__(self,):
+        gridDefinitionsFile = "gridsDefinitions.yaml"
+
         self.continuumRegionsLogic = regionLogic.RegionLogic()
         self.radialVelocityEstimator = radialVelocity.RadialVelocity()
         self.specSynthesizer = specInterface.SynthesizeSpectrum()
+        self.gridDefinitions = gridDefinitionsRead.gridDefinition(gridDefinitionsFile)
 
         self.spectrum = sp.Spectrum()
         self.theoreticalSpectrum = sp.Spectrum(wave=[],\

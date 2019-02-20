@@ -1,0 +1,80 @@
+# Add next grid this way!!!
+#-------------------------------- ADD NEXT ONE BY ANALOGY
+basicGrid: # give your own, distinct name for each grid
+  folderName: folderName # folder grid name
+  #define grid:
+  # Paramterers included in grid description:
+  teff: True
+  logg: True
+  vmic: True
+  me: True
+  # define searching for grid files
+  fluxFilesFilter: "*norm" # regexp for obtaining list of grid files with glob()
+  # Decoding parameters from file names:
+  # program reads all numbers (also in float format) in filename of flux files
+  # specify which number corresponds to which parameter (count from 0):
+  # if paramter is not included is not important
+  fluxNameToParameters:
+    teff: 0
+    logg: 1
+    vmic: 2
+    me: 3
+  # Define reading from grid file
+  waveFile: refWave.dat # File with reference wavelength, placed in folderName, if None uses waves columns
+  skipColumns: 0 # No of columns to skip in files with fluxes
+  waveColumn: 0 # column with wavelenghts, count from 0
+  fluxColumn: 1 # column with flux, count from 0
+  comments: "#" # comments sign - default #
+#-------------------------------- ADD NEXT ONE BY ANALOGY
+lowTempGrid: # give your own, distinct name for each grid
+  folderName: "lowTempGrid" # folder grid name
+  #define grid:
+  # Paramterers included in grid description:
+  teff: True
+  logg: True
+  vmic: False
+  me: False
+  # define searching for grid files
+  fluxFilesFilter: "flux*" # regexp for obtaining list of grid files with glob()
+  # Decoding parameters from file names:
+  # program reads all numbers (also in float format) in filename of flux files
+  # specify which number corresponds to which parameter (count from 0):
+  # if paramter is not included is not important
+  fluxNameToParameters:
+    teff: 0
+    logg: 1
+    vmic: 2
+    me: 3
+  # Define reading from grid file
+  waveFile: refWave.dat # File with reference wavelength, placed in folderName, if None uses waves columns
+  skipColumns: 0 # No of columns to skip in files with fluxes
+  waveColumn: 0 # column with wavelenghts, count from 0
+  fluxColumn: 1 # column with flux, count from 0
+  comments: "#" # comments sign - default #
+#===============================================================================
+#-------------------------------- ADD NEXT ONE BY ANALOGY
+# basicGrid: # give your own, distinct name for each grid
+#   folderName: folderName # folder grid name
+#   #define grid:
+#   # Paramterers included in grid description:
+#   teff: True
+#   logg: True
+#   vmic: True
+#   me: True
+#   # define searching for grid files
+#   fluxFilesFilter: "*gridFileTypicalEnd" # regexp for obtaining list of grid files with glob()
+#   # Decoding parameters from file names:
+#   # program reads all numbers (also in float format) in filename of flux files
+#   # specify which number corresponds to which parameter (count from 0):
+#   # if paramter is not included is not important
+#   fluxNameToParameters:
+#     teff: 0
+#     logg: 1
+#     vmic: 2
+#     me: 3
+#   # Define reading from grid file
+#   waveFile: refWave.dat # File with reference wavelength, placed in folderName, if None uses waves columns
+#   skipColumns: 0 # No of columns to skip in files with fluxes
+#   waveColumn: 0 # column with wavelenghts, count from 0
+#   fluxColumn: 1 # column with flux, count from 0
+#   comments: "#" # comments sign - default #
