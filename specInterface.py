@@ -13,7 +13,6 @@ import multiprocessing as mp
 import itertools
 import collections
 
-import bigGridInterface
 import gridInterface
 from spectrum import Spectrum, readSpectrum, saveSpectrum
 
