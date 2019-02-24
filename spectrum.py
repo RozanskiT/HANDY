@@ -10,7 +10,7 @@ import pandas as pd
 
 def readSpectrum(filename,colWave=0,colFlux=1,skipRows=0):
     #print(filename)
-    df=pd.read_table(filename,header=None,delim_whitespace=True,comment='#',skiprows=skipRows)
+    df = pd.read_csv(filename,header=None,delim_whitespace=True,comment='#',skiprows=skipRows)
     return Spectrum(wave=df[colWave].values,flux=df[colFlux].values,name=filename)
 
 def saveSpectrum(filename,spectrum):
