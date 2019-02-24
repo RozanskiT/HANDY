@@ -76,10 +76,10 @@ class normAppLogic:
 
     def computeTheoreticalSpectrum(self,teff,logg,vmic,me,vsini,vmac,resolution):
         parameters = teff,logg,vmic,me,vsini,vmac,resolution
-        # try:
-        self.theoreticalSpectrum = self.specSynthesizer.synthesizeSpectrum(parameters,minWave = 3500, maxWave = 7000)
-        # except:
-        #     print("Spectrum out of grid or some interpolation bug...")
+        try:
+            self.theoreticalSpectrum = self.specSynthesizer.synthesizeSpectrum(parameters,minWave = 3500, maxWave = 7000)
+        except:
+            print("Spectrum out of grid or some interpolation bug...")
 
     def saveNormedSpectrum(self,fileName,correctForRadialVelocity):
         saveSpectrum = copy.deepcopy(self.normedSpectrum)
