@@ -90,13 +90,10 @@ class NormSpectra(tkinter.Tk):
         # self.vlevel.set(0)
 
     def onChooseGrid(self):
-        print(self.vlevel.get())
-        # self.bttn23['state'] = 'disabled'
-        # self.bttn11['state'] = 'normal'
         lG = self.appLogic.gridDefinitions.listAvailibleGrids()
-        # print(lG)
-        # print(lG[self.vlevel.get()])
-        self.appLogic.gridDefinitions.setChoosenGrid(lG[self.vlevel.get()])
+        numOfGrid = self.vlevel.get()
+        self.appLogic.gridDefinitions.setChoosenGrid(lG[numOfGrid])
+        print("Set {} grid".format(lG[numOfGrid]))
         # print(d)
         paramsList, folder, refWave, paramsNum, paramsMult, fluxFilesFilter, skipRows, waveColumn, fluxColumn, comments = self.appLogic.gridDefinitions.setGridParams()
         self.appLogic.specSynthesizer.setGrid(
