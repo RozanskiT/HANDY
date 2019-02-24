@@ -91,5 +91,5 @@ lowTempGrid: # give your own, distinct name for each grid
 #   waveFile: refWave.dat # File with reference wavelength, placed in folderName, if None uses waves columns
 #   skipRows: 0 # No of rows to skip in files with fluxes
 #   waveColumn: 0 # column with wavelenghts, count from 0
-#   fluxColumn: 1 # column with flux, count from 0
+#   fluxColumn: 0 # column with flux, count from 0
 #   comments: "#" # comments sign - default #

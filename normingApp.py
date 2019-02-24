@@ -125,7 +125,7 @@ class NormSpectra(tkinter.Tk):
             self.vmicScale['from_'] ,self.vmicScale['to'] = self.appLogic.specSynthesizer.getRangesOfParameter("vmic")
         if d["me"]:
             minim, maxim = self.appLogic.specSynthesizer.getRangesOfParameter("me")
-            if minim == 0:
+            if minim == 0: #TODO conversion of units should be done better
                 minim = -2
             else:
                 minim = np.round(np.log10(minim),2)
