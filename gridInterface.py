@@ -59,6 +59,7 @@ class GridSynthesizer:
         """
         return glob.glob(self.gridFolder + self.fluxFilesFilter)
 
+
     def loadRefWave(self):
         # filename="./refWave.dat"
         df = pd.read_csv(self.wavelengthFileName,
