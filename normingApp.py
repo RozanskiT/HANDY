@@ -41,8 +41,8 @@ class NormSpectra(tkinter.Tk):
 
     def createMainWindow(self):
         self.createWindow()
-        self.createMenu()
         self.createControls()
+        self.createMenu()
         self.createPlottingArea()
 
     def createWindow(self):
@@ -54,7 +54,7 @@ class NormSpectra(tkinter.Tk):
 
         menu = tkinter.Menu(self)
         self.config(menu=menu)
-
+        #------------------------------------
         fileMenu1 = tkinter.Menu(menu)
         menu.add_cascade(label="Load", underline=0, menu=fileMenu1)
         fileMenu1.add_command(label="Open spectrum", command=self.onOpenSpectrum)
@@ -63,7 +63,7 @@ class NormSpectra(tkinter.Tk):
         fileMenu1.add_command(label="Load theoretical spectrum",\
                               command=self.onLoadTheoreticalSectrum)
         fileMenu1.add_command(label="Exit", underline=0, command=self.onExit)
-
+        #------------------------------------
         fileMenu2 = tkinter.Menu(menu)
         menu.add_cascade(label="Save", underline=0, menu=fileMenu2)
         fileMenu2.add_command(label="Save normed spectra",\
@@ -74,6 +74,60 @@ class NormSpectra(tkinter.Tk):
                               command=self.onSaveVelocityCorrectedSpectrum)
         fileMenu2.add_command(label="Save theoretical spetrum",\
                               command=self.onSaveTheoreticalSpectrum)
+        #------------------------------------
+        fileMenu3 = tkinter.Menu(menu)
+        menu.add_cascade(label="Grids", underline=0, menu=fileMenu3)
+        self.vlevel = tkinter.IntVar()
+        lG = self.appLogic.gridDefinitions.listAvailibleGrids()
+        self.appLogic.gridDefinitions.setChoosenGrid(lG[0])
+        self.onChooseGrid() # load default grid
+        for i, gridName in enumerate(lG):
+            fileMenu3.add_radiobutton(label = gridName,
+                                      var = self.vlevel,
+                                      value = i,
+                                      command = self.onChooseGrid
+                                      )
+        # self.vlevel.set(0)
+
+    def onChooseGrid(self):
+        lG = self.appLogic.gridDefinitions.listAvailibleGrids()
+        numOfGrid = self.vlevel.get()
+        self.appLogic.gridDefinitions.setChoosenGrid(lG[numOfGrid])
+        print("Set {} grid".format(lG[numOfGrid]))
+        # print(d)
+        paramsList, folder, refWave, paramsNum, paramsMult, fluxFilesFilter, skipRows, waveColumn, fluxColumn, comments = self.appLogic.gridDefinitions.setGridParams()
+        self.appLogic.specSynthesizer.setGrid(
+            folder = folder,
+            refWave = refWave,
+            paramsList = paramsList,
+            paramsNum = paramsNum,
+            paramsMult = paramsMult,
+            fluxFilesFilter = fluxFilesFilter,
+            skipRows = skipRows,
+            waveColumn = waveColumn,
+            fluxColumn = fluxColumn,
+            comments = comments,
+        )
+        d = self.appLogic.gridDefinitions.getDefinedVariables()
+        setVal = {True: 'normal', False: 'disabled'}
+        self.teffScale['state'] = setVal[d["teff"]]
+        self.loggScale['state'] = setVal[d["logg"]]
+        self.vmicScale['state'] = setVal[d["vmic"]]
+        self.meScale['state'] = setVal[d["me"]]
+        if d["teff"]:
+            self.teffScale['from_'],self.teffScale['to'] = self.appLogic.specSynthesizer.getRangesOfParameter("teff")
+        if d["logg"]:
+            self.loggScale['from_'], self.loggScale['to'] = self.appLogic.specSynthesizer.getRangesOfParameter("logg")
+        if d["vmic"]:
+            self.vmicScale['from_'] ,self.vmicScale['to'] = self.appLogic.specSynthesizer.getRangesOfParameter("vmic")
+        if d["me"]:
+            minim, maxim = self.appLogic.specSynthesizer.getRangesOfParameter("me")
+            if minim == 0: #TODO conversion of units should be done better
+                minim = -2
+            else:
+                minim = np.round(np.log10(minim),2)
+            maxim = np.round(np.log10(maxim),2)
+            self.meScale['from_'] ,self.meScale['to'] = minim, maxim
 
     def onOpenSpectrum(self):
         dirname = os.getcwd()

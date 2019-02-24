@@ -11,6 +11,7 @@ import spectrum as sp
 import regionLogic
 import radialVelocity
 import specInterface
+import gridDefinitionsRead
 
 """
 DESCRIPTION
@@ -20,9 +21,12 @@ DESCRIPTION
 class normAppLogic:
 
     def __init__(self,):
+        gridDefinitionsFile = "gridsDefinitions.yaml"
+
         self.continuumRegionsLogic = regionLogic.RegionLogic()
         self.radialVelocityEstimator = radialVelocity.RadialVelocity()
         self.specSynthesizer = specInterface.SynthesizeSpectrum()
+        self.gridDefinitions = gridDefinitionsRead.gridDefinition(gridDefinitionsFile)
 
         self.spectrum = sp.Spectrum()
         self.theoreticalSpectrum = sp.Spectrum(wave=[],\
@@ -72,10 +76,10 @@ class normAppLogic:
 
     def computeTheoreticalSpectrum(self,teff,logg,vmic,me,vsini,vmac,resolution):
         parameters = teff,logg,vmic,me,vsini,vmac,resolution
-        try:
-            self.theoreticalSpectrum = self.specSynthesizer.synthesizeSpectrum(parameters,minWave = 3500, maxWave = 7000)
-        except:
-            print("Spectrum out of grid!!!")
+        # try:
+        self.theoreticalSpectrum = self.specSynthesizer.synthesizeSpectrum(parameters,minWave = 3500, maxWave = 7000)
+        # except:
+        #     print("Spectrum out of grid or some interpolation bug...")
 
     def saveNormedSpectrum(self,fileName,correctForRadialVelocity):
         saveSpectrum = copy.deepcopy(self.normedSpectrum)
