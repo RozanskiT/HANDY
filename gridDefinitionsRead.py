@@ -41,6 +41,10 @@ class gridDefinition:
             return
         if gridName in self.gridDefinitions:
             self.choosenGrid = self.gridDefinitions[gridName]
+            if self.choosenGrid["folderName"][0] != '/':
+                self.choosenGrid["folderName"] = '/' + self.choosenGrid["folderName"]
+            if self.choosenGrid["folderName"][-1] != '/':
+                self.choosenGrid["folderName"] += '/'
         else:
             print("Chosen grid doesn't exist")
 
@@ -53,13 +57,27 @@ class gridDefinition:
                         self.choosenGrid["me"],
                         self.choosenGrid["fluxFilesFilter"],
                         self.choosenGrid["fluxNameToParameters"],
+                        self.choosenGrid["multiplicationFactors"],
                         self.choosenGrid["waveFile"],
-                        self.choosenGrid["skipColumns"],
+                        self.choosenGrid["skipRows"],
                         self.choosenGrid["waveColumn"],
                         self.choosenGrid["fluxColumn"],
                         self.choosenGrid["comments"],
                         )
         return allReturn
+
+    def setGridParams(self):
+        paramsList = [ k for k in ["teff","logg","vmic","me"] if self.choosenGrid[k] == True]
+        folder = self.choosenGrid["folderName"]
+        refWave = self.choosenGrid["waveFile"]
+        paramsNum = self.choosenGrid["fluxNameToParameters"]
+        paramsMult = self.choosenGrid["multiplicationFactors"]
+        fluxFilesFilter = self.choosenGrid["fluxFilesFilter"]
+        skipColumns = self.choosenGrid["skipRows"]
+        waveColumn = self.choosenGrid["waveColumn"]
+        fluxColumn = self.choosenGrid["fluxColumn"]
+        comments = self.choosenGrid["comments"]
+        return paramsList, folder, refWave, paramsNum, paramsMult, fluxFilesFilter, skipColumns, waveColumn, fluxColumn, comments
 
     def getDefinedVariables(self):
         r = {k:self.choosenGrid[k] for k in ["teff","logg","vmic","me"]}

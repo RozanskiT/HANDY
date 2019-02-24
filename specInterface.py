@@ -14,6 +14,7 @@ import itertools
 import collections
 
 import bigGridInterface
+import gridInterface
 from spectrum import Spectrum, readSpectrum, saveSpectrum
 
 """
@@ -25,7 +26,7 @@ DESCRIPTION
 class SynthesizeSpectrum:
     def __init__(self):
 
-        self.grid = bigGridInterface.BigGridSynthesizer()
+        self.grid = None #bigGridInterface.BigGridSynthesizer()
 
     def synthesizeSpectrum(self,parameters,minWave = 3500, maxWave = 7000):
 
@@ -33,7 +34,7 @@ class SynthesizeSpectrum:
         # change units of metallicity, to units used in SYNSPEC
         me = 10**me
 
-        spectrum = self.grid.interpolateSpectrum(teff,logg,me,vmic)
+        spectrum = self.grid.interpolateSpectrum({"teff":teff, "logg":logg, "me":me, "vmic":vmic})
 
         # get anly needed range in wavelength
         mask = (minWave <= spectrum.wave ) & (spectrum.wave <= maxWave)
@@ -58,6 +59,35 @@ class SynthesizeSpectrum:
         spectrum.flux = self.instrumentalSmooth(spectrum.flux,FWHM_before,instrumentalFWHM)
 
         return spectrum
+
+    def setGrid(self,
+                folder,
+                refWave,
+                paramsList,
+                paramsNum,
+                paramsMult,
+                fluxFilesFilter,
+                skipRows,
+                waveColumn,
+                fluxColumn,
+                comments):
+        # print(paramsList, folder, refWave, paramsNum, paramsMult, fluxFilesFilter, skipRows, waveColumn, fluxColumn, comments)
+
+        self.grid = gridInterface.GridSynthesizer(
+                    folder = folder,
+                    refWave = refWave,
+                    paramsList = paramsList,
+                    paramsNum = paramsNum,
+                    paramsMult = paramsMult,
+                    fluxFilesFilter = fluxFilesFilter,
+                    skipRows = skipRows,
+                    waveColumn = waveColumn,
+                    fluxColumn = fluxColumn,
+                    comments = comments,
+        )
+
+    def getRangesOfParameter(self,key):
+        return self.grid.getRanges(key)
 
     #---------------------------------------------------------------------------
     # VSINI, VMAC and instrumental broadening methods

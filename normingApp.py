@@ -41,8 +41,8 @@ class NormSpectra(tkinter.Tk):
 
     def createMainWindow(self):
         self.createWindow()
-        self.createMenu()
         self.createControls()
+        self.createMenu()
         self.createPlottingArea()
 
     def createWindow(self):
@@ -80,6 +80,7 @@ class NormSpectra(tkinter.Tk):
         self.vlevel = tkinter.IntVar()
         lG = self.appLogic.gridDefinitions.listAvailibleGrids()
         self.appLogic.gridDefinitions.setChoosenGrid(lG[0])
+        self.onChooseGrid() # load default grid
         for i, gridName in enumerate(lG):
             fileMenu3.add_radiobutton(label = gridName,
                                       var = self.vlevel,
@@ -96,13 +97,40 @@ class NormSpectra(tkinter.Tk):
         # print(lG)
         # print(lG[self.vlevel.get()])
         self.appLogic.gridDefinitions.setChoosenGrid(lG[self.vlevel.get()])
+        # print(d)
+        paramsList, folder, refWave, paramsNum, paramsMult, fluxFilesFilter, skipRows, waveColumn, fluxColumn, comments = self.appLogic.gridDefinitions.setGridParams()
+        self.appLogic.specSynthesizer.setGrid(
+            folder = folder,
+            refWave = refWave,
+            paramsList = paramsList,
+            paramsNum = paramsNum,
+            paramsMult = paramsMult,
+            fluxFilesFilter = fluxFilesFilter,
+            skipRows = skipRows,
+            waveColumn = waveColumn,
+            fluxColumn = fluxColumn,
+            comments = comments,
+        )
         d = self.appLogic.gridDefinitions.getDefinedVariables()
         setVal = {True: 'normal', False: 'disabled'}
         self.teffScale['state'] = setVal[d["teff"]]
         self.loggScale['state'] = setVal[d["logg"]]
         self.vmicScale['state'] = setVal[d["vmic"]]
         self.meScale['state'] = setVal[d["me"]]
-        # print(d)
+        if d["teff"]:
+            self.teffScale['from_'],self.teffScale['to'] = self.appLogic.specSynthesizer.getRangesOfParameter("teff")
+        if d["logg"]:
+            self.loggScale['from_'], self.loggScale['to'] = self.appLogic.specSynthesizer.getRangesOfParameter("logg")
+        if d["vmic"]:
+            self.vmicScale['from_'] ,self.vmicScale['to'] = self.appLogic.specSynthesizer.getRangesOfParameter("vmic")
+        if d["me"]:
+            minim, maxim = self.appLogic.specSynthesizer.getRangesOfParameter("me")
+            if minim == 0:
+                minim = -2
+            else:
+                minim = np.round(np.log10(minim),2)
+            maxim = np.round(np.log10(maxim),2)
+            self.meScale['from_'] ,self.meScale['to'] = minim, maxim
 
     def onOpenSpectrum(self):
         dirname = os.getcwd()
