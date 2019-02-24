@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
+import os
 import numpy as np
 import pandas as pd
 import copy
@@ -21,7 +22,8 @@ DESCRIPTION
 class normAppLogic:
 
     def __init__(self,):
-        gridDefinitionsFile = "gridsDefinitions.yaml"
+        self.folderHANDY = os.path.dirname(os.path.abspath(__file__))
+        gridDefinitionsFile = self.folderHANDY+"/gridsDefinitions.yaml"
 
         self.continuumRegionsLogic = regionLogic.RegionLogic()
         self.radialVelocityEstimator = radialVelocity.RadialVelocity()
