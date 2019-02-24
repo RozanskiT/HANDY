@@ -39,8 +39,8 @@ class GridSynthesizer:
         self.fluxFilesFilter = fluxFilesFilter
 
         dirname = os.path.dirname(os.path.abspath(__file__))
-        self.bigGridFolder = dirname + folder
-        self.wavelengthFileName = self.bigGridFolder + refWave
+        self.gridFolder = dirname + folder
+        self.wavelengthFileName = self.gridFolder + refWave
 
         self.ifCommonWavelength = False if refWave is None else True
         if self.ifCommonWavelength:
@@ -57,7 +57,7 @@ class GridSynthesizer:
         """
         List all model files available in grid
         """
-        return glob.glob(self.bigGridFolder + self.fluxFilesFilter)
+        return glob.glob(self.gridFolder + self.fluxFilesFilter)
 
     def loadRefWave(self):
         # filename="./refWave.dat"
