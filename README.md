@@ -36,7 +36,7 @@ HANDY is interactive python3 program for spectrum normalization. The normalizati
 Two steps:
 * Clone the repository or download it as the .zip file
 * Download and untar folders with grids in your project catalog
-  - Can be downloaded from : https://drive.google.com/open?id=1HoGdsCiT7-sRO5a_YqBjVRrTetkxNvwg
+  - Can be downloaded from : https://drive.google.com/open?id=1VH5hQ5toTWuPFA_6vIpD1aZxs6u0nmia
   
 ### Installing
 
