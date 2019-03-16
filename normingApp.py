@@ -629,7 +629,7 @@ class NormSpectra(tkinter.Tk):
                     self.replotUpdatedRanges(contRegionsWaveAndFlux,ifAutoscale=True)
                 else:
                     print("Last spectrum in choosen folder!")
-
+        key_press_handler(event, self.canvas, self.toolbar)
         print("TODO: add some shortcuts to buttons")
 
     def onPlotClick(self,event):
