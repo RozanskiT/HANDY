@@ -11,7 +11,7 @@ from matplotlib.backend_bases import key_press_handler
 from matplotlib.widgets import SpanSelector
 from matplotlib.figure import Figure
 from matplotlib.ticker import ScalarFormatter
-import matplotlib.pyplot as plt # TODO Czy to działa?
+import matplotlib.pyplot as plt
 import numpy as np
 import glob
 #import matplotlib.pyplot as plt
@@ -185,6 +185,8 @@ class NormSpectra(tkinter.Tk):
 
         self.line23.set_data(self.appLogic.theoreticalSpectrum.wave,\
                              self.appLogic.theoreticalSpectrum.flux)
+        if self.appLogic.theoreticalSpectrum.wave is not None and len(self.appLogic.theoreticalSpectrum.wave)!=0:
+            self.updateErrorPlot()
         self.canvas.draw()
 
     def onExit(self):
@@ -543,8 +545,9 @@ class NormSpectra(tkinter.Tk):
                                                 )
         wt = self.appLogic.theoreticalSpectrum.wave if self.appLogic.theoreticalSpectrum.wave is not None else []
         ft = self.appLogic.theoreticalSpectrum.flux if self.appLogic.theoreticalSpectrum.flux is not None else []
-        self.line23.set_data(wt,\
-                             ft)
+        self.line23.set_data(wt,ft)
+        if self.appLogic.theoreticalSpectrum.wave is not None and len(self.appLogic.theoreticalSpectrum.wave)!=0:
+            self.updateErrorPlot()
         self.canvas.draw()
 
     def onOpenSavePlot(self):
@@ -570,18 +573,32 @@ class NormSpectra(tkinter.Tk):
 
         self.plotFrame = tkinter.Frame(self.frame)
         self.dpi = 100
-        self.fig = Figure((5.0, 5.0), dpi=self.dpi,tight_layout=True)
+        self.fig = Figure((5.0, 5.0), dpi=self.dpi)
+        # self.fig = Figure((5.0, 5.0), dpi=self.dpi,tight_layout=True)
+        # self.fig.tight_layout(w_pad = 0.0)
+        self.fig.subplots_adjust(wspace=0.0, hspace=0.0, top=0.95, bottom=0.05, left=0.05, right=0.95)
+        from matplotlib.gridspec import GridSpec
+        gs = GridSpec(5, 1)
         self.canvas = FigCanvas(self.fig, master=self.plotFrame)
         self.canvas.draw()
 
-        self.ax1 = self.fig.add_subplot(211)
+        # self.ax1 = self.fig.add_subplot(311)
+        self.ax1 = self.fig.add_subplot(gs[:2])
+        self.ax1.grid(True)
         self.line11,self.line12,self.line13,=self.ax1.plot([],[],'k-',\
                                                            [],[],'ro',\
                                                            [],[],'b-')
-        self.ax2 = self.fig.add_subplot(212,sharex=self.ax1)
-        self.line21,self.line22,self.line23 = self.ax2.plot([],[],'b',\
-                                                            [],[],'k',\
-                                                            [],[],'k')
+        # self.ax2 = self.fig.add_subplot(312,sharex=self.ax1)
+        self.ax2 = self.fig.add_subplot(gs[2:4],sharex=self.ax1)
+        self.ax2.grid(True)
+        self.line21,self.line22,self.line23 = self.ax2.plot([],[],'k',\
+                                                            [],[],'b',\
+                                                            [],[],'b')
+        # self.ax3 = self.fig.add_subplot(313,sharex=self.ax1)
+        self.ax3 = self.fig.add_subplot(gs[-1],sharex=self.ax1)
+        self.ax3.grid(True)
+        self.line31, = self.ax3.plot([],[],'b')
+
         self.ax1.set_autoscaley_on(True)
         #self.ax2.set_autoscaley_on(False)
         self.ax2.set_ylim([0.2,1.1])
@@ -721,6 +738,7 @@ class NormSpectra(tkinter.Tk):
             self.ax1.set_autoscale_on(True)
             self.ax1.relim()
             self.ax1.autoscale_view(True,True,True)
+            self.toolbar.update()
 
         self.canvas.draw()
 
@@ -733,6 +751,23 @@ class NormSpectra(tkinter.Tk):
         self.line13.set_data(self.appLogic.continuum.wave,\
                              self.appLogic.continuum.flux)
         self.line13.set_zorder(10)
+
+        if self.appLogic.theoreticalSpectrum.wave is not None and len(self.appLogic.theoreticalSpectrum.wave)!=0:
+            self.updateErrorPlot()
+
+
+    def updateErrorPlot(self):
+        if self.appLogic.normedSpectrum.wave is None or len(self.appLogic.normedSpectrum.wave) == 0:
+            self.line31.set_data([], [])
+        else:
+            mask = self.appLogic.normedSpectrum.flux != 0
+            x = self.appLogic.normedSpectrum.wave[mask]
+            diff = np.interp(x,
+                                 self.appLogic.theoreticalSpectrum.wave,
+                                 self.appLogic.theoreticalSpectrum.flux) - self.appLogic.normedSpectrum.flux[mask]
+            self.line31.set_data(x, diff)
+            diff = np.nan_to_num(diff)
+            self.ax3.set_ylim([np.min(diff),np.max(diff)])
 
     def colorGenerator(self):
         while True:
