@@ -15,11 +15,15 @@ class RegionLogic:
     def __init__(self):
 
         self.regions=[]
+        self.orders=[]
         self.specialPoints=[]
         self.activeRegionNumber=0
 
         self.lastRegions=[]
+        self.lastOrders=[]
         self.lastActiveRegionNumber=[]
+
+        self.defaultOrder = 2
     #===========================================================================
     # REGIONS
     def addRegion(self,newRange,ifCreateNewRegion=False):
@@ -34,6 +38,7 @@ class RegionLogic:
         changeActiveRegion=0
         if self.regions == []: # If there are no regions just create one with one range
             self.regions.append([newRange])
+            self.orders.append(self.defaultOrder)
         else:
             if ifCreateNewRegion:
                 for region  in self.regions: # modify region by region
@@ -57,11 +62,15 @@ class RegionLogic:
                             region.remove(i)
                     if newRegion:
                         self.regions.append(newRegion)
-                while [] in self.regions:
-                    self.regions.remove([])
+                        # self.orders.append(self.defaultOrder)
+                        self.orders.append(self.orders[self.activeRegionNumber])
+                for i in sorted([i for i, x in enumerate(self.regions) if x  == []], reverse=True):
+                    del self.regions[i]
+                    del self.orders[i]
                 self.regions.append([newRange])
-                self.regions.sort()
-                self.activeRegionNumber=self.regions.index([newRange])
+                self.orders.append(self.defaultOrder)
+                self.regions, self.orders = (list(t) for t in zip(*sorted(zip(self.regions, self.orders))))
+                self.activeRegionNumber = self.regions.index([newRange])
             else:
                 ifReplaceAllActiveRange=False
                 # [indmin,indmax] = newRange
@@ -117,9 +126,10 @@ class RegionLogic:
                 else:
                     self.regions[self.activeRegionNumber].append(newRange)
                 self.regions[self.activeRegionNumber].sort()
-                self.regions.sort()
-            while [] in self.regions:
-                self.regions.remove([])
+                self.regions, self.orders = (list(t) for t in zip(*sorted(zip(self.regions, self.orders))))
+            for i in sorted([i for i, x in enumerate(self.regions) if x == []], reverse=True):
+                del self.regions[i]
+                del self.orders[i]
             self.activeRegionNumber+=changeActiveRegion
 
     def deleteRegionOrPoint(self,x,y):
@@ -148,6 +158,7 @@ class RegionLogic:
                     and self.activeRegionNumber:
                     self.activeRegionNumber-=1
                 del self.regions[minIdxReg]
+                del self.orders[minIdxReg]
         else:
             if len(self.specialPoints) != 0:
                 del self.specialPoints[idxPoint]
@@ -197,15 +208,26 @@ class RegionLogic:
 
     def saveLast(self):
         self.lastRegions.append(copy.deepcopy(self.regions))
+        self.lastOrders.append(copy.deepcopy(self.orders))
         self.lastActiveRegionNumber.append(self.activeRegionNumber)
 
     def restoreLast(self):
         try:
             self.regions = copy.deepcopy(self.lastRegions.pop())
+            self.orders = copy.deepcopy(self.lastOrders.pop())
             self.activeRegionNumber = self.lastActiveRegionNumber.pop()
         except:
             self.regions = []
+            self.orders = [ ]
             self.activeRegionNumber = 0
+
+    #===========================================================================
+    # ORDERS
+
+    def setOrderOfActiveRegion(self,order):
+        if self.orders:
+            self.orders[self.activeRegionNumber] = order
+
     #===========================================================================
     # POINTS
     def addPoint(self,x, y,spectrum):
@@ -265,19 +287,28 @@ class RegionLogic:
         with open(fileName, 'r') as f:
             lines=f.readlines()
             ifReadPoints=False
+            ifReadOrders=False
+            tempOrders = []
             tempRegions = []
             tempSpecialPoints = []
             for line in lines:
-                if line[0:15]=='#SeparatePoints':
+                if line[0:16]=='# SeparatePoints':
                     ifReadPoints=True
                     continue
-                if line.startswith('#'):
+                if line[0:8]=='# Orders':
+                    ifReadPoints=False
+                    ifReadOrders=True
+                    continue
+                if line.startswith('#') or line.startswith(' '):
                     continue
                 elements=str.split(line)
                 if ifReadPoints:
                     w = float(elements[0])
                     if w > min(spectrum.wave) and w < max(spectrum.wave):
                         tempSpecialPoints.append([w,float(elements[1])])
+                elif ifReadOrders:
+                    for v in elements:
+                        tempOrders.append(int(v))
                 else:
                     tempRange = []
                     for i in range(int(len(elements)/2)):
@@ -288,28 +319,33 @@ class RegionLogic:
                         tempRange.append([l,r])
                     if tempRange: # If not empty
                         tempRegions.append(tempRange)
+            if not tempOrders and ifReadOrders==False:
+                tempOrders = [self.defaultOrder for _ in tempRegions]
             self.regions = tempRegions
             self.specialPoints = tempSpecialPoints
+            self.orders = tempOrders
         # except:
         #     print("WARNING: RegionLogic.readRegionsFile\n"\
         #           +"Unable to load continuum from this file")
 
     def saveRegionsFile(self,spectrum,fileName):
         with open(fileName, 'w') as f:
+            f.write('# Continuum definition file\n')
+            f.write('#====================================\n')
+            f.write('# Ranges grouped in regions\n')
             for region in self.regions:
                 for r in region:
                     f.write("%8.3f %8.3f "%(r[0],r[1]))
                 f.write('\n')
-            f.write('#####################################\n')
-            f.write('#SeparatePoints\n')
-            f.write('#####################################\n')
+            f.write('#====================================\n')
+            f.write('# SeparatePoints\n')
             for p in self.specialPoints:
-                # l=np.searchsorted(spectrum.wave,p[0]-1,side='left')
-                # r=np.searchsorted(spectrum.wave,p[0]+1,side='right')
-                # #print(l,r,p[0])
-                # median=np.median(spectrum.flux[l:r])
-                # ratio=p[1]/median
                 f.write("%7.3f %7.3f\n"%(p[0],p[1]))
+            f.write('#====================================\n')
+            f.write('# Orders\n')
+            for p in self.orders:
+                f.write("%d "%(p,))
+            f.write('\n#====================================\n')
             print("SAVED: %s"%(fileName))
 
     def updateRegionsAndPoints(self,spectrum):
@@ -337,6 +373,12 @@ class RegionLogic:
         self.lastRegions = []
         self.lastActiveRegionNumber = []
 
+    def getOrderOfActiveRegion(self):
+        if self.orders:
+            return self.orders[self.activeRegionNumber]
+        else:
+            return self.defaultOrder
+
     #===========================================================================
     # PRINTING
     def printRegions(self):
@@ -345,24 +387,73 @@ class RegionLogic:
     def printSpecialPoints(self):
         print(self.specialPoints)
 
+    def printOrders(self):
+        print(self.orders)
+
 ################################################################################
 ### TESTS
 ################################################################################
+
 def testRegions():
     regionInterface = RegionLogic()
-    regionInterface.printRegions()
-
     regionInterface.addRegion([104.23,300])
-    regionInterface.addRegion([300,300])
+    # regionInterface.printRegions()
+    assert(regionInterface.regions == [[[104.23,300]]])
+    assert(regionInterface.orders == [3])
+    regionInterface.setOrderOfActiveRegion(5)
+
     regionInterface.addRegion([700,900])
+    assert(regionInterface.regions == [[[104.23,300],[700,900]]])
+    assert(regionInterface.orders == [5])
 
     regionInterface.addRegion([1100,1300],ifCreateNewRegion=True)
-    regionInterface.addRegion([1400,1600])
-    regionInterface.addRegion([1700,1900])
+    assert(regionInterface.regions == [[[104.23,300],[700,900]],[[1100,1300]]])
+    assert(regionInterface.orders == [5,3])
 
-    regionInterface.addRegion([650,1350],ifCreateNewRegion=True)
+    regionInterface.addRegion([1400,1500])
+    assert(regionInterface.regions == [[[104.23,300],[700,900]],[[1100,1300],[1400,1500]]])
+    assert(regionInterface.orders == [5,3])
 
+    regionInterface.addRegion([1200,1450])
+    assert(regionInterface.regions == [[[104.23,300],[700,900]],[[1100,1500]]])
+    assert(regionInterface.orders == [5,3])
+
+    regionInterface.addRegion([10,50],ifCreateNewRegion=True)
+    # regionInterface.printRegions()
+    assert(regionInterface.regions == [[[10,50]],[[104.23,300],[700,900]],[[1100,1500]]])
+    assert(regionInterface.orders == [3,5,3])
+
+    regionInterface.changeActiveRegion(20,0)
+    regionInterface.setOrderOfActiveRegion(4)
+    assert(regionInterface.regions == [[[10,50]],[[104.23,300],[700,900]],[[1100,1500]]])
+    assert(regionInterface.orders == [4,5,3])
+
+    regionInterface.addRegion([40,1410],ifCreateNewRegion=True)
+    # regionInterface.printRegions()
+    # regionInterface.printOrders()
+    assert(regionInterface.regions == [[[10, 1500]]])
+    assert(regionInterface.orders == [3])
+
+    regionInterface.deleteRegionOrPoint(400,0)
+    assert(regionInterface.regions == [])
+    assert(regionInterface.orders == [])
+
+    regionInterface.addRegion([1100,1300],ifCreateNewRegion=True)
+    regionInterface.setOrderOfActiveRegion(4)
+    assert(regionInterface.regions == [[[1100,1300]]])
+    assert(regionInterface.orders == [4])
+
+    regionInterface.addRegion([800,1000],ifCreateNewRegion=True)
+    regionInterface.setOrderOfActiveRegion(5)
+
+    regionInterface.addRegion([1400,1500])
+
+    assert(regionInterface.regions == [[[800,1000],[1100,1300],[1400,1500]]])
+    assert(regionInterface.orders == [5])
+
+    regionInterface.addRegion([1020,1080],ifCreateNewRegion=True)
     regionInterface.printRegions()
+    regionInterface.printOrders()
 
 def main():
     testRegions()

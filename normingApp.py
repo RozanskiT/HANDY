@@ -164,6 +164,8 @@ class NormSpectra(tkinter.Tk):
                                                             fileName)
 
             self.appLogic.continuumRegionsLogic.updateRegionsAndPoints(self.appLogic.spectrum)
+            order = str(self.appLogic.continuumRegionsLogic.getOrderOfActiveRegion())
+            self.currentOrder.set(order)
             if self.ifAutoUpdateNormalization:
                 self.appLogic.normSpectrum()
             contRegionsWaveAndFlux = self.appLogic.getContinuumRangesForPlot()
@@ -248,6 +250,17 @@ class NormSpectra(tkinter.Tk):
                                      text = "Create new active region",\
                                      command = self.onCreateNewActiveRegion)
         self.bttn31.grid(row = 2, column = 0, sticky = WENS)
+
+        self.currentOrder = tkinter.StringVar()
+        self.bttn41 = tkinter.Spinbox(self.controlFrameA,\
+                                        from_=1,\
+                                        to=10,\
+                                        command=self.onUpdateOrder,\
+                                        textvariable=self.currentOrder,\
+                                        )
+                                     # text = "Create new active region",\
+                                     # command = self.onCreateNewActiveRegion)
+        self.bttn41.grid(row = 3, column = 0, sticky = WENS)
         #-----------------------------------------------------------------------
         self.bttn12 = tkinter.Button(self.controlFrameA,\
                                      text = "Next spectrum",\
@@ -263,6 +276,9 @@ class NormSpectra(tkinter.Tk):
                                     text = "Auto fit special points",\
                                     command = self.onAutoFitSpecialPoints)
         self.bttn32.grid(row = 2, column = 1, sticky = WENS)
+
+        self.bttn42 = tkinter.Label(self.controlFrameA, text=" <--- Adjust order")
+        self.bttn42.grid(row = 3, column = 1, sticky = WENS)
         #-----------------------------------------------------------------------
         self.bttn13 = tkinter.Button(self.controlFrameA,\
                                      text = "Normalize",\
@@ -448,6 +464,18 @@ class NormSpectra(tkinter.Tk):
         contRegionsWaveAndFlux = self.appLogic.getContinuumRangesForPlot()
         self.replotUpdatedRanges(contRegionsWaveAndFlux)
         # print(self.ifAlreadyNormed.get())
+
+    def onUpdateOrder(self):
+        order = int(self.currentOrder.get())
+        self.appLogic.updateOrderOfActiveRegion(order)
+        if self.ifAutoUpdateNormalization:
+            self.appLogic.normSpectrum()
+        contRegionsWaveAndFlux = self.appLogic.getContinuumRangesForPlot()
+        self.replotUpdatedRanges(contRegionsWaveAndFlux)
+
+        # int(self.currentOrder.get())
+        # print(int(self.currentOrder.get()))
+        # self.currentOrder.set("4")
 
     def onBack(self):
         self.appLogic.continuumRegionsLogic.restoreLast()
@@ -670,6 +698,8 @@ class NormSpectra(tkinter.Tk):
         if self.ifAutoUpdateNormalization:
             self.appLogic.normSpectrum()
         self.numberOfActiveRegion = self.appLogic.continuumRegionsLogic.activeRegionNumber
+        order = str(self.appLogic.continuumRegionsLogic.getOrderOfActiveRegion())
+        self.currentOrder.set(order)
         contRegionsWaveAndFlux = self.appLogic.getContinuumRangesForPlot()
         self.replotUpdatedRanges(contRegionsWaveAndFlux)
         #self.appLogic.continuumRegionsLogic.printSpecialPoints()
@@ -697,6 +727,8 @@ class NormSpectra(tkinter.Tk):
             self.ifCreateNewRegion = False
             self.resetButtons()
             self.numberOfActiveRegion = self.appLogic.continuumRegionsLogic.activeRegionNumber
+            order = str(self.appLogic.continuumRegionsLogic.getOrderOfActiveRegion())
+            self.currentOrder.set(order)
             if self.ifAutoUpdateNormalization:
                 self.appLogic.normSpectrum()
             contRegionsWaveAndFlux = self.appLogic.getContinuumRangesForPlot()

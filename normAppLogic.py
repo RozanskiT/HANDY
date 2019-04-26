@@ -158,14 +158,20 @@ class normAppLogic:
         contRegionsWaveAndFlux = self.continuumRegionsLogic.waveToSpectrumParts(self.spectrum)
         wOut = []
         fOut = []
-        for region in contRegionsWaveAndFlux:
+        for ord,region in zip(self.continuumRegionsLogic.orders,contRegionsWaveAndFlux):
             wReg = []
             fReg = []
             for w,f in region:
                 wReg.extend(w)
                 fReg.extend(f)
             wRegOut = np.linspace(wReg[0],wReg[-1],max((wReg[-1]-wReg[0])/separation,1))
-            fRegOut = self.fitFunction(wReg,fReg,wRegOut,1,3)
+            try:
+                fRegOut = self.fitFunction(wReg,fReg,wRegOut,1,ord)
+            except Exception as e:
+                fRegOut = []
+                wRegOut = []
+                print(e)
+                print("WARNING: Unable to fit, try making region shorter")
             wOut.extend(wRegOut)
             fOut.extend(fRegOut)
         # plt.plot(wOut,fOut,'.')
@@ -193,6 +199,10 @@ class normAppLogic:
                                                          self.spectrum.flux,\
                                                          radVel)
         self.radialVelocity+=radVel
+
+    def updateOrderOfActiveRegion(self,order):
+        self.continuumRegionsLogic.setOrderOfActiveRegion(order)
+        
 ################################################################################
 ### TESTS
 ################################################################################
