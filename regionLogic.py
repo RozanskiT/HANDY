@@ -23,7 +23,7 @@ class RegionLogic:
         self.lastOrders=[]
         self.lastActiveRegionNumber=[]
 
-        self.defaultOrder = 2
+        self.defaultOrder = 3
     #===========================================================================
     # REGIONS
     def addRegion(self,newRange,ifCreateNewRegion=False):
