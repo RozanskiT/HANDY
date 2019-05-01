@@ -78,6 +78,8 @@ class normAppLogic:
 
     def computeTheoreticalSpectrum(self,teff,logg,vmic,me,vsini,vmac,resolution):
         parameters = teff,logg,vmic,me,vsini,vmac,resolution
+        # There was a bug - sometimes data from TKinter comes as string, so:
+        parameters = [p if p is not str else float(p.replace(",","."))for p in parameters]
         try:
             self.theoreticalSpectrum = self.specSynthesizer.synthesizeSpectrum(parameters,minWave = 3500, maxWave = 7000)
         except:
@@ -174,8 +176,7 @@ class normAppLogic:
                 print("WARNING: Unable to fit, try making region shorter")
             wOut.extend(wRegOut)
             fOut.extend(fRegOut)
-        # plt.plot(wOut,fOut,'.')
-        # plt.show()
+
         return wOut,fOut
 
 
@@ -202,7 +203,7 @@ class normAppLogic:
 
     def updateOrderOfActiveRegion(self,order):
         self.continuumRegionsLogic.setOrderOfActiveRegion(order)
-        
+
 ################################################################################
 ### TESTS
 ################################################################################

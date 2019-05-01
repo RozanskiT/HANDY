@@ -50,29 +50,33 @@ class NormSpectra(tkinter.Tk):
         self.frame.pack(fill=tkinter.BOTH, expand=1)
         self.wm_title("HANDY - Handy tool for spectra normalization")
 
+        # img = tkinter.PhotoImage(file=os.path.join(os.path.dirname(os.path.realpath(__file__)),"handyColor.gif"))
+        img = tkinter.PhotoImage(file=os.path.join(os.path.dirname(os.path.realpath(__file__)),"handy.gif"))
+        self.tk.call('wm', 'iconphoto', self._w, img)
+
     def createMenu(self):
 
         menu = tkinter.Menu(self)
         self.config(menu=menu)
         #------------------------------------
         fileMenu1 = tkinter.Menu(menu)
-        menu.add_cascade(label="Load", underline=0, menu=fileMenu1)
+        menu.add_cascade(label="Open", underline=0, menu=fileMenu1)
         fileMenu1.add_command(label="Open spectrum", command=self.onOpenSpectrum)
-        fileMenu1.add_command(label="Load continuum",\
+        fileMenu1.add_command(label="Open continuum file",\
                               command=self.onLoadContinuum)
-        fileMenu1.add_command(label="Load theoretical spectrum",\
+        fileMenu1.add_command(label="Open theoretical spectrum",\
                               command=self.onLoadTheoreticalSectrum)
         fileMenu1.add_command(label="Exit", underline=0, command=self.onExit)
         #------------------------------------
         fileMenu2 = tkinter.Menu(menu)
         menu.add_cascade(label="Save", underline=0, menu=fileMenu2)
-        fileMenu2.add_command(label="Save normed spectra",\
+        fileMenu2.add_command(label="Save normed spectrum",\
                               command=self.onSaveNormedSpectrum)
+        fileMenu2.add_command(label="Save normed spectrum VRAD corrected",\
+                              command=self.onSaveVelocityCorrectedNormedSpectrum)
         fileMenu2.add_command(label="Save continuum",\
                               command=self.onSaveContinuum)
-        fileMenu2.add_command(label="Save velocity corrected spetrum",\
-                              command=self.onSaveVelocityCorrectedSpectrum)
-        fileMenu2.add_command(label="Save theoretical spetrum",\
+        fileMenu2.add_command(label="Save theoretical spectrum",\
                               command=self.onSaveTheoreticalSpectrum)
         #------------------------------------
         fileMenu3 = tkinter.Menu(menu)
@@ -200,8 +204,17 @@ class NormSpectra(tkinter.Tk):
             initialName = self.appLogic.spectrum.name.split('.')[-2]+".norm"
         fileName = filedialog.asksaveasfilename(initialfile=initialName)
         if fileName and self.appLogic.spectrum.wave is not None:
-            self.appLogic.saveNormedSpectrum(fileName,self.ifSaveCorrectedvrad.get())
+            # self.appLogic.saveNormedSpectrum(fileName,self.ifSaveCorrectedvrad.get())
+            self.appLogic.saveNormedSpectrum(fileName,False)
 
+    def onSaveVelocityCorrectedNormedSpectrum(self):
+        initialName = "out.norm"
+        if self.appLogic.spectrum.name is not None:
+            initialName = self.appLogic.spectrum.name.split('.')[-2]+"_rv.norm"
+        fileName = filedialog.asksaveasfilename(initialfile=initialName)
+        if fileName and self.appLogic.spectrum.wave is not None:
+            self.appLogic.saveNormedSpectrum(fileName,True)
+            # self.appLogic.saveSpectrum(fileName)
 
     def onSaveContinuum(self):
         initialName = "out.cont"
@@ -211,13 +224,6 @@ class NormSpectra(tkinter.Tk):
         if fileName and self.appLogic.spectrum.wave is not None:
             self.appLogic.continuumRegionsLogic.saveRegionsFile(self.appLogic.spectrum,\
                                                                 fileName)
-    def onSaveVelocityCorrectedSpectrum(self):
-        initialName = "out.norm"
-        if self.appLogic.spectrum.name is not None:
-            initialName = self.appLogic.spectrum.name.split('.')[-2]+"_rv.dat"
-        fileName = filedialog.asksaveasfilename(initialfile=initialName)
-        if fileName and self.appLogic.spectrum.wave is not None:
-            self.appLogic.saveSpectrum(fileName)
 
     def onSaveTheoreticalSpectrum(self):
         initialName = "out.syn"
@@ -401,19 +407,23 @@ class NormSpectra(tkinter.Tk):
         self.resolution.set(np.inf) # Must be like that :(
         self.resolutionScale.grid(row = 1, column = 4, sticky = WENS)
 
+        self.bttnClearTheorSpec = tkinter.Button(self.controlFrameB,\
+                                    text = "Clear\ntheoretical\nspectrum",\
+                                    command = self.onClearTheoreticalSpectrum)
+        self.bttnClearTheorSpec.grid(row = 0, column = 5, rowspan = 1, sticky = WENS)
+
         self.bttnLoadTheorSpec = tkinter.Button(self.controlFrameB,\
                                     text = "Compute\nspectrum",\
                                     command = self.onComputeTheoreticalSpectrum)
-        self.bttnLoadTheorSpec.grid(row = 0, column = 5, rowspan = 2, sticky = WENS)
+        self.bttnLoadTheorSpec.grid(row = 1, column = 5, rowspan = 1, sticky = WENS)
 
-        self.ifSaveCorrectedvrad = tkinter.IntVar()
-        self.chButtonCorrectedVRad = tkinter.Checkbutton(self.controlFrameC,
-                                                        text = "Save\ncorrected\nfor\nvrad?",
-                                                        variable = self.ifSaveCorrectedvrad,
-                                                        #height = 20,
-
-                                                        )
-        self.chButtonCorrectedVRad.grid(row = 0, column = 0, sticky = WENS)
+        # self.ifSaveCorrectedvrad = tkinter.IntVar()
+        # self.chButtonCorrectedVRad = tkinter.Checkbutton(self.controlFrameC,
+        #                                                 text = "Save\ncorrected\nfor\nvrad?",
+        #                                                 variable = self.ifSaveCorrectedvrad,
+        #                                                 #height = 20,
+        #                                                 )
+        # self.chButtonCorrectedVRad.grid(row = 0, column = 0, sticky = WENS)
 
         self.ifAlreadyNormed = tkinter.IntVar()
         self.workWithNormedSpectrum = tkinter.Checkbutton(self.controlFrameC,
@@ -463,7 +473,6 @@ class NormSpectra(tkinter.Tk):
         self.numberOfActiveRegion = self.appLogic.continuumRegionsLogic.activeRegionNumber
         contRegionsWaveAndFlux = self.appLogic.getContinuumRangesForPlot()
         self.replotUpdatedRanges(contRegionsWaveAndFlux)
-        # print(self.ifAlreadyNormed.get())
 
     def onUpdateOrder(self):
         order = int(self.currentOrder.get())
@@ -473,15 +482,13 @@ class NormSpectra(tkinter.Tk):
         contRegionsWaveAndFlux = self.appLogic.getContinuumRangesForPlot()
         self.replotUpdatedRanges(contRegionsWaveAndFlux)
 
-        # int(self.currentOrder.get())
-        # print(int(self.currentOrder.get()))
-        # self.currentOrder.set("4")
-
     def onBack(self):
         self.appLogic.continuumRegionsLogic.restoreLast()
         self.numberOfActiveRegion = self.appLogic.continuumRegionsLogic.activeRegionNumber
         contRegionsWaveAndFlux = self.appLogic.getContinuumRangesForPlot()
         self.replotUpdatedRanges(contRegionsWaveAndFlux)
+        if self.ifAutoUpdateNormalization:
+            self.onNormalize()
 
     def onChooseActiveRegion(self):
         self.ifCreateNewRegion = False
@@ -557,12 +564,6 @@ class NormSpectra(tkinter.Tk):
                  +"Load theoretical spectra first!")
 
     def onComputeTheoreticalSpectrum(self):
-        # print(self.teffVar.get())
-        # print(self.loggVar.get())
-        # print(self.vmicVar.get())
-        # print(self.meVar.get())
-        # print(self.vsiniVar.get())
-        # print(self.vmacVar.get())
         self.appLogic.computeTheoreticalSpectrum(self.teffVar.get(),
                                                 self.loggVar.get(),
                                                 self.vmicVar.get(),
@@ -576,6 +577,13 @@ class NormSpectra(tkinter.Tk):
         self.line23.set_data(wt,ft)
         if self.appLogic.theoreticalSpectrum.wave is not None and len(self.appLogic.theoreticalSpectrum.wave)!=0:
             self.updateErrorPlot()
+        self.canvas.draw()
+
+    def onClearTheoreticalSpectrum(self):
+        self.appLogic.theoreticalSpectrum.wave = None
+        self.appLogic.theoreticalSpectrum.flux = None
+        self.line23.set_data([],[])
+        self.updateErrorPlot()
         self.canvas.draw()
 
     def onOpenSavePlot(self):
@@ -789,7 +797,7 @@ class NormSpectra(tkinter.Tk):
 
 
     def updateErrorPlot(self):
-        if self.appLogic.normedSpectrum.wave is None or len(self.appLogic.normedSpectrum.wave) == 0:
+        if self.appLogic.normedSpectrum.wave is None or len(self.appLogic.normedSpectrum.wave) == 0 or self.appLogic.theoreticalSpectrum.wave is None:
             self.line31.set_data([], [])
         else:
             mask = self.appLogic.normedSpectrum.flux != 0
@@ -819,7 +827,6 @@ class NormSpectra(tkinter.Tk):
                 self.appLogic.normSpectrum()
             else:
                 self.onAlreadyNormed()
-            #print(self.radVelDialog.radialVelocity)
             #------------ REPLOT
             contRegionsWaveAndFlux = self.appLogic.getContinuumRangesForPlot()
             self.replotUpdatedRanges(contRegionsWaveAndFlux)

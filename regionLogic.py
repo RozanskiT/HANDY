@@ -197,13 +197,20 @@ class RegionLogic:
 
     def waveToSpectrumParts(self,spectrum):
         contRegionsWaveAndFlux = []
+        forRemove = [] # Remove ranges wich are empty
         idxRegions = self.waveToIndexRegions(spectrum.wave)
         for region in idxRegions:
             contRegion = []
             for r in region:
-                contRegion.append([spectrum.wave[r[0]:r[1]],\
-                                   spectrum.flux[r[0]:r[1]]])
+                fluxRange = [spectrum.wave[r[0]:r[1]], spectrum.flux[r[0]:r[1]]]
+                if len(fluxRange[0]) == 0:
+                    print("Empty range {:.5f} - {:.5f} will be removed.".format(r[0],r[1]))
+                    forRemove.append(np.mean(r))
+                else:
+                    contRegion.append(fluxRange)
             contRegionsWaveAndFlux.append(contRegion)
+        for wMean in forRemove:
+            self.deleteRegionOrPoint(wMean,0.0)
         return contRegionsWaveAndFlux
 
     def saveLast(self):
