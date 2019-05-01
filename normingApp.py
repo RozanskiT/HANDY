@@ -10,7 +10,7 @@ from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk as Navigation
 from matplotlib.backend_bases import key_press_handler
 from matplotlib.widgets import SpanSelector
 from matplotlib.figure import Figure
-from matplotlib.ticker import ScalarFormatter
+from matplotlib.ticker import ScalarFormatter, MaxNLocator
 import matplotlib.pyplot as plt
 import numpy as np
 import glob
@@ -633,6 +633,7 @@ class NormSpectra(tkinter.Tk):
         # self.ax3 = self.fig.add_subplot(313,sharex=self.ax1)
         self.ax3 = self.fig.add_subplot(gs[-1],sharex=self.ax1)
         self.ax3.grid(True)
+        self.ax3.yaxis.set_major_locator(MaxNLocator(nbins=3,prune='upper'))
         self.line31, = self.ax3.plot([],[],'b')
 
         self.ax1.set_autoscaley_on(True)
