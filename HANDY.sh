@@ -11,10 +11,14 @@ DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd -P )"
 # Default execution
 SVE='python "'$DIR'/normingApp.py"'
 
-source activate HANDY-env
+CONDA_BASE=$(conda info --base)
+source $CONDA_BASE/etc/profile.d/conda.sh . # Very dirty solution but works, by:
+# https://github.com/conda/conda/issues/7980
+
+conda activate HANDY-env
 
 echo Calling $SVE "$@"
 # which python
 eval $SVE "$@"
 
-source deactivate
+conda deactivate
