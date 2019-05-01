@@ -248,12 +248,12 @@ class NormSpectra(tkinter.Tk):
         self.bttn11.grid(row = 0, column = 0, sticky = WENS)
 
         self.bttn21 = tkinter.Button(self.controlFrameA,\
-                                    text = "Choose active region",\
+                                    text = "Choose region",\
                                     command = self.onChooseActiveRegion)
         self.bttn21.grid(row = 1, column = 0, sticky = WENS)
 
         self.bttn31 = tkinter.Button(self.controlFrameA,\
-                                     text = "Create new active region",\
+                                     text = "Create region",\
                                      command = self.onCreateNewActiveRegion)
         self.bttn31.grid(row = 2, column = 0, sticky = WENS)
 
@@ -297,7 +297,7 @@ class NormSpectra(tkinter.Tk):
         self.bttn23.grid(row = 1, column = 2, sticky = WENS)
 
         self.bttn33 = tkinter.Button(self.controlFrameA,\
-                                    text = "Radial Velocity",\
+                                    text = "Radial velocity",\
                                     command = self.onRadialVelocity)
         self.bttn33.grid(row = 2, column = 2, sticky = WENS)
         #=======================================================================
@@ -372,7 +372,7 @@ class NormSpectra(tkinter.Tk):
         self.meScale = tkinter.Scale(self.controlFrameB,
                                     variable = self.meVar,
                                     orient = hor,
-                                    label = "me",
+                                    label = "[M/H]",
                                     from_ = -1, #TODO work around low metallicity bug
                                     to = 0.3,
                                     resolution = 0.1,
@@ -413,7 +413,7 @@ class NormSpectra(tkinter.Tk):
         self.bttnClearTheorSpec.grid(row = 0, column = 5, rowspan = 1, sticky = WENS)
 
         self.bttnLoadTheorSpec = tkinter.Button(self.controlFrameB,\
-                                    text = "Compute\nspectrum",\
+                                    text = "Compute\ntheoretical\nspectrum",\
                                     command = self.onComputeTheoreticalSpectrum)
         self.bttnLoadTheorSpec.grid(row = 1, column = 5, rowspan = 1, sticky = WENS)
 
@@ -434,7 +434,7 @@ class NormSpectra(tkinter.Tk):
         self.workWithNormedSpectrum.grid(row = 1, column = 0, sticky = WENS)
 
         self.bttnOpenSaveWindow = tkinter.Button(self.controlFrameC,\
-                                    text = "Plot fitted spectrum",\
+                                    text = "Plot\nfitted\nspectrum",\
                                     command = self.onOpenSavePlot)
         self.bttnOpenSaveWindow.grid(row = 2, column = 0, sticky = WENS)
 
