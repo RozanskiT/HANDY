@@ -12,7 +12,7 @@ HANDY is interactive Python3 program for spectrum normalization. The normalizati
   <a href="#acknowledgments">Acknowledgments</a>
 </p>
 
-![Basic usage of HANDY](docs/typicalUse.gif)
+![Basic usage of HANDY](docs/img/typicalUse.gif)
 
 ## Key Features
 
@@ -75,7 +75,8 @@ in your terminal.
 
 ## Tutorial
 
-Full tutorial could be find in project GitHub page:
+Full description and tutorial could be find in project GitHub page:
+https://rozanskit.github.io/HANDY/
 
 But you can see some snapshots from main window below:
 
