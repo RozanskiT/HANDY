@@ -1,6 +1,6 @@
 # HANDY - Handy tool for spectra normalization
 
-HANDY is interactive python3 program for spectrum normalization. The normalization process is based on "regions" and "ranges". "Ranges" are continuum parts defined manually by user (or uploaded from file from previous program run) which will be used for continuum level fit. "Regions" are groups of ranges for whom single chebyshev polynomial are fitted. Polynomial fits are connected with the use of Akima'a spline interpolation. The program offers graphical access to theoretical grid of spectra for obtaining an idea about processed star atmosphere parameters and interface for radial velocity correction. 
+HANDY is interactive Python3 program for spectrum normalization. The normalization process is based on "regions" and "ranges". "Ranges" are continuum parts defined manually by user (or uploaded from file from previous program run) which will be used for continuum level fit. "Regions" are groups of ranges for whom single chebyshev polynomial of chosen order is fitted. Polynomial fits are connected with the use of Akima'a spline interpolation. The program offers graphical access to theoretical grid of spectra for obtaining an idea about processed star atmosphere parameters and interface for radial velocity correction. Different grids of spectra can be easly added by the user. 
 
 <p align="center">
   <a href="#key-features">Key Features</a> •
@@ -12,7 +12,7 @@ HANDY is interactive python3 program for spectrum normalization. The normalizati
   <a href="#acknowledgments">Acknowledgments</a>
 </p>
 
-![Basic usage of HANDY](docsFiles/usageMovie1.gif)
+![Basic usage of HANDY](docsFiles/typicalUse.gif)
 
 ## Key Features
 
@@ -23,6 +23,7 @@ HANDY is interactive python3 program for spectrum normalization. The normalizati
 * Adding user defined grids
 * Radial velocity correction 
 * Developed and tested on Linux
+* Easy install and easy to use
 
 ## Getting Started
 
@@ -34,13 +35,19 @@ HANDY is interactive python3 program for spectrum normalization. The normalizati
 ### Download
 
 Two steps:
-* Clone the repository or download it as the .zip file
+* Clone the repository or download it as the .zip file:
+  - Clone by:
+    ```
+    git clone https://github.com/RozanskiT/HANDY.git
+    ```
+  - Download zip from:
+  https://github.com/RozanskiT/HANDY/archive/master.zip
 * Download and untar folders with grids in your project catalog
   - Can be downloaded from : https://drive.google.com/open?id=1VH5hQ5toTWuPFA_6vIpD1aZxs6u0nmia
   
 ### Installing
 
-You need python3 with all needed packages.
+You need Python3 with all needed packages.
 
 The easiest way to work with HANDY is with [Conda enviroment manager](https://conda.io/docs/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file):
 
@@ -68,7 +75,9 @@ in your terminal.
 
 ## Tutorial
 
-Page with tutorial is in preparation, but:
+Full tutorial could be find in project GitHub page:
+
+But you can see some snapshots from main window below:
 
 ### Adding new grid
 * Compute your new grid (equally spaced in each dimension) in chosen number of parameters from among effective temperature, surface gravity, metallicity and microturbulence velocity. Code paramters of each spectrum in its file name. Your grid files can be of two types:
