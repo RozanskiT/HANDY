@@ -12,7 +12,7 @@ HANDY is interactive Python3 program for spectrum normalization. The normalizati
   <a href="#acknowledgments">Acknowledgments</a>
 </p>
 
-![Basic usage of HANDY](docsFiles/typicalUse.gif)
+![Basic usage of HANDY](docs/typicalUse.gif)
 
 ## Key Features
 
