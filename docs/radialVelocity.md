@@ -1,10 +1,10 @@
-# Radial velocity correction
+# HANDY - Radial velocity correction
 
-<p align="center">
-  <a href="index.md">Home</a> •
-  <a href="basics.md">Basics</a> •
-  <a href="regions.md">Regions and ranges</a> •
-  <a href="points.md">Points</a> •
-  <a href="radialVelocity.md">Radial velocity correction</a> •
-  <a href="grids.md">Grids</a>
-</p>
+## Table of Contents
+  * [Home](index.md)
+  * [Install](install.md)
+  * [Basics](basics.md)
+  * [Regions and ranges](regions.md)
+  * [Points](points.md)
+  * [Radial velocity correction](radialVelocity.md)
+  * [Grids](grids.md)

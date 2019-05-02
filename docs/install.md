@@ -1,4 +1,4 @@
-# HANDY - (Special) Points in normalization process
+# HANDY - Install
 
 ## Table of Contents
   * [Home](index.md)
