@@ -52,3 +52,11 @@
   * **Clear theoretical spectrum** - clears theoretical spectrum from second plot
   * **Compute theoretical spectrum** - interpolate theoretical spectrum of parameters given by sliders values
   * **Sliders and resolution spinbox** - enable user to set parameters of theoretical spectrum
+  
+### Working with already normed spectrum
+
+  * **Checkbox _Already normalised spectrum_** - Use loaded spectrum as normalized spectrum. When checked it is only possible to correct spectrum for radial velocity and do comparison to theoretical spectrum
+  * **Plot fitted spectrum** - plots normalized spectrum and model spectrum in x-range taken from main plot, and enable user to save the picture for future inspection
+  
+![Working with already normed spectrum](img/alreadyNormedSpectrum.png)
+
