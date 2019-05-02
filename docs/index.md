@@ -13,6 +13,7 @@ HANDY is interactive Python3 program for spectrum normalization. The normalizati
 
 ![Basic usage of HANDY](img/typicalUse.gif)
 
+[link](regions.md)
 ## Key Features
 
 * Interactive normalization of spectrum in single run
