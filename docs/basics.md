@@ -9,6 +9,15 @@
   * [Radial velocity correction](radialVelocity.md)
   * [Grids](grids.md)
 
+## Basic workflow
+
+1. Load spectrum for analysis
+2. Compute theoretical spectrum and correct processed spectrum for radial velocity (see more: [Radial velocity correction](radialVelocity.md))
+3. Define or load region/ranges and special Points (see more: [Regions and ranges](regions.md), [Points](points.md))
+4. Establish some initial parameters by visual comparizon with spectrum from grid (see more: [Grids](grids.md))
+5. Save normed spectrum and _continuum file_. Decide if you want to save radial velocity corrected spectrum or not.
+6. Load new spectrum and continue...
+
 ### Plots
  * **Top plot** 
     - _Black line_ - observed spectrum which we are working on
