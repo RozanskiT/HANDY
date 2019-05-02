@@ -23,9 +23,9 @@ Two steps:
     git clone https://github.com/RozanskiT/HANDY.git
     ```
   - Download zip from:
-  https://github.com/RozanskiT/HANDY/archive/master.zip
+  [HANDY.zip](https://github.com/RozanskiT/HANDY/archive/master.zip)
 * Download and untar folders with grids in your project catalog
-  - Can be downloaded from : https://drive.google.com/open?id=1VH5hQ5toTWuPFA_6vIpD1aZxs6u0nmia
+  - Can be downloaded from : [Availible grids](https://drive.google.com/open?id=1VH5hQ5toTWuPFA_6vIpD1aZxs6u0nmia)
   
   It is a very good idea to create special directory with grids (eg. ~/grids/), keep all needed grids there, and only links those folders to HANDY main directory by:
     ```
