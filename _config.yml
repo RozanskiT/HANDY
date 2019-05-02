@@ -5,9 +5,9 @@ relative_links:
   enabled: true
   collections: true
 include:
- - index.md
- - basics.md
- - regions.md
- - points.md
- - radialVelocity.md
- - grids.md
+ - docs/index.md
+ - docs/basics.md
+ - docs/regions.md
+ - docs/points.md
+ - docs/radialVelocity.md
+ - docs/grids.md
