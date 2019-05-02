@@ -1,1 +1,13 @@
 theme: jekyll-theme-slate
+plugins:
+  - jekyll-relative-links
+relative_links:
+  enabled: true
+  collections: true
+include:
+ - index.md
+ - basics.md
+ - regions.md
+ - points.md
+ - radialVelocity.md
+ - grids.md
