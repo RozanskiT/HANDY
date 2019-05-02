@@ -2,19 +2,16 @@
 
 HANDY is interactive Python3 program for spectrum normalization. The normalization process is based on "regions" and "ranges". "Ranges" are continuum parts defined manually by user (or uploaded from file from previous program run) which will be used for continuum level fit. "Regions" are groups of ranges for whom single chebyshev polynomial of chosen order is fitted. Polynomial fits are connected with the use of Akima'a spline interpolation. The program offers graphical access to theoretical grid of spectra for obtaining an idea about processed star atmosphere parameters and interface for radial velocity correction. Different grids of spectra can be easly added by the user. 
 
-<p align="center">
-  [link](regions.md) •
-  <a href="./index.md">Home</a> •
-  <a href="./basics.md">Basics</a> •
-  <a href="./regions.md">Regions and ranges</a> •
-  <a href="./points.md">Points</a> •
-  <a href="./radialVelocity.md">Radial velocity correction</a> •
-  <a href="./grids.md">Grids</a>
-</p>
+## Table of Contents
+  * [Home](./index.md)
+  * [Basics](basics.md)
+  * [Regions and ranges](regions.md)
+  * [Points](points.md)
+  * [Radial velocity correction](radialVelocity.md)
+  * [Grids](grids.md)
 
 ![Basic usage of HANDY](img/typicalUse.gif)
 
-<p> markdown: [link](regions.md)  </p>
 ## Key Features
 
 * Interactive normalization of spectrum in single run
