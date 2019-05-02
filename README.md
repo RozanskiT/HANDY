@@ -23,7 +23,7 @@ HANDY is interactive Python3 program for spectrum normalization. The normalizati
 * Adding user defined grids
 * Radial velocity correction 
 * Developed and tested on Linux
-* Easy install and easy to use
+* Easy installation and easy to use
 
 ## Getting Started
 
@@ -73,35 +73,37 @@ HANDY
 ```
 in your terminal.
 
+### Update
+
+If you used git to install HANDY you can easy update HANDY just by pulling changes from remote:
+```
+git pull
+```
+Otherwise you need to re-install HANDY from newly downloaded .zip file.
+
 ## Tutorial
 
-Full description and tutorial could be find in project GitHub page:
+Full description and tutorial could be find in HANDY project GitHub page:
+
 https://rozanskit.github.io/HANDY/
 
 But you can see some snapshots from main window below:
 
-### Adding new grid
-* Compute your new grid (equally spaced in each dimension) in chosen number of parameters from among effective temperature, surface gravity, metallicity and microturbulence velocity. Code paramters of each spectrum in its file name. Your grid files can be of two types:
-  - with wavelength and flux columns in each file,
-  - only with flux column in each grid file but with common wavelength file,
-* Define your grid in gridsDefinitions.yaml. This file is self explanatory.
-* It's done!
+### Modyfying regions and ranges
 
-### Play with regions end ranges creation/deletion
+![Example of usage](docs/img/playingWithRegions.gif)
 
-* Left mause button - create ranges
-* Right mouse button - remove the neares range
-* Scroll wheel click - change active region to the nearest to cursor 
+### Adjusting order of fit
 
-![Basic usage of HANDY](docsFiles/egPlayingWithRegionsAndRanges.gif)
+![Example of usage](docs/img/settingOrderHb.gif)
 
 ### Correcting for radial velocity
 
-![Basic usage of HANDY](docsFiles/egVRadCorrection.gif)
+![Example of usage](docs/img/radialVelocity.gif)
 
 ### Loading predefined continuum file
 
-![Basic usage of HANDY](docsFiles/egLoadPredefinedContinuum.gif)
+![Example of usage](docs/img/loadContinuum.gif)
 
 ## License
 
