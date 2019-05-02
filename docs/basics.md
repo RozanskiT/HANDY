@@ -9,6 +9,20 @@
   * [Radial velocity correction](radialVelocity.md)
   * [Grids](grids.md)
 
+### Plots
+ * **Top plot** 
+    - _Black line_ - observed spectrum which we are working on
+    - _Blue line_ - fitted continuum
+    - _Red points_ - special points
+    - Short _blue/red/green/magenta/cyan/purple_ parts - each color denotes single region, while each highlighted part called range
+ * **Middle plot**
+    - _Black line_ - normed observed spectrum which we are working on (spectrum/continuum)
+    - _Blue line_ - loaded theoretical spectrum
+ * **Botton plot**
+    - _Blue line_ - residuals of fit (normed spetrum - theoretical spectrum)
+  
+![Plots](img/plots.png)
+  
 ### Buttons
 ![Buttons panel](img/ButtonPanel.png)
 
