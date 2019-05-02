@@ -89,7 +89,7 @@ https://rozanskit.github.io/HANDY/
 
 But you can see some snapshots from main window below:
 
-### Modyfying regions and ranges
+### Modifying regions and ranges
 
 ![Example of usage](docs/img/playingWithRegions.gif)
 
