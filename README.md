@@ -41,9 +41,9 @@ Two steps:
     git clone https://github.com/RozanskiT/HANDY.git
     ```
   - Download zip from:
-  https://github.com/RozanskiT/HANDY/archive/master.zip
+  [HANDY-master.zip](https://github.com/RozanskiT/HANDY/archive/master.zip)
 * Download and untar folders with grids in your project catalog
-  - Can be downloaded from : https://drive.google.com/open?id=1VH5hQ5toTWuPFA_6vIpD1aZxs6u0nmia
+  - Can be downloaded from : [Grids](https://drive.google.com/open?id=1VH5hQ5toTWuPFA_6vIpD1aZxs6u0nmia)
   
 ### Installing
 
