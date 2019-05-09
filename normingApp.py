@@ -263,6 +263,7 @@ class NormSpectra(tkinter.Tk):
                                         to=10,\
                                         command=self.onUpdateOrder,\
                                         textvariable=self.currentOrder,\
+                                        state = "readonly",\
                                         )
                                      # text = "Create new active region",\
                                      # command = self.onCreateNewActiveRegion)
