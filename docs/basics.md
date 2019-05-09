@@ -18,6 +18,26 @@
 5. Save normed spectrum and _continuum file_. Decide if you want to save radial velocity corrected spectrum or not.
 6. Load new spectrum and continue...
 
+### Menu
+ * **Open**
+    - _Open spectrum_ - loading spectrum for processing. Works with _ASCII_ and _FITS_ files. HANDY does not use any information from header part. Defaults for ASCII format are (this properties can be modified globally in _spectrum.py_ file):
+       - 1st column - wavelength
+       - 2nd column - flux
+       - without header
+       - '#' are the first character in comment lines
+       - whitespace delimited
+    
+    - _Open continuum file_ - enable user to load predefined file with regions/ranges and special Points definitions (see more: [Regions and ranges](regions.md), [Points](points.md))
+    - _Open theoretical spectrum_ - load some spectrum for comparison, only ASCII format
+    - _Exit_ - close the HANDY program
+ * **Save**
+    - _Save normed spectrum_ - saving normalized spectrum **with oryginal wavelengths** table, only ASCII format
+    - _Save normed spectrum VRAD corrected_ - saving radial velocity corrected normalized spectrum, only ASCII format
+    - _Save continuum_ - saving definitions of regions/ranges and special Points
+    - _Save theoretical spectrum_ - saving theoretical spectrum, only ASCII format
+ * **Grids**
+    - here apears names of predefined grids defined in _gridsDefinitions.yaml_ file (see more: [Grids](grids.md))
+
 ### Plots
  * **Top plot** 
     - _Black line_ - observed spectrum which we are working on
