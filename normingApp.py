@@ -731,18 +731,21 @@ class NormSpectra(tkinter.Tk):
 
     def onUsingSpanSelector(self,xmin, xmax):
         if self.appLogic.spectrum.wave is not None:
-            newRange = [xmin, xmax]
-            self.appLogic.continuumRegionsLogic.addRegion(newRange,\
-                      ifCreateNewRegion=self.ifCreateNewRegion)
-            self.ifCreateNewRegion = False
-            self.resetButtons()
-            self.numberOfActiveRegion = self.appLogic.continuumRegionsLogic.activeRegionNumber
-            order = str(self.appLogic.continuumRegionsLogic.getOrderOfActiveRegion())
-            self.currentOrder.set(order)
-            if self.ifAutoUpdateNormalization:
-                self.appLogic.normSpectrum()
-            contRegionsWaveAndFlux = self.appLogic.getContinuumRangesForPlot()
-            self.replotUpdatedRanges(contRegionsWaveAndFlux)
+            if sum((self.appLogic.spectrum.wave > xmin) & (self.appLogic.spectrum.wave < xmax)) == 0:
+                print("WARING: Chosen range doesn't contain any points!")
+            else:
+                newRange = [xmin, xmax]
+                self.appLogic.continuumRegionsLogic.addRegion(newRange,\
+                          ifCreateNewRegion=self.ifCreateNewRegion)
+                self.ifCreateNewRegion = False
+                self.resetButtons()
+                self.numberOfActiveRegion = self.appLogic.continuumRegionsLogic.activeRegionNumber
+                order = str(self.appLogic.continuumRegionsLogic.getOrderOfActiveRegion())
+                self.currentOrder.set(order)
+                if self.ifAutoUpdateNormalization:
+                    self.appLogic.normSpectrum()
+                contRegionsWaveAndFlux = self.appLogic.getContinuumRangesForPlot()
+                self.replotUpdatedRanges(contRegionsWaveAndFlux)
         else:
             print("WARNING: NormSpectra.onUsingSpanSelector\nLoad spectrum first")
         #self.appLogic.continuumRegionsLogic.printRegions()

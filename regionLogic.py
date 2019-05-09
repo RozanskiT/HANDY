@@ -203,14 +203,17 @@ class RegionLogic:
             contRegion = []
             for r in region:
                 fluxRange = [spectrum.wave[r[0]:r[1]], spectrum.flux[r[0]:r[1]]]
-                if len(fluxRange[0]) == 0:
-                    print("Empty range {:.5f} - {:.5f} will be removed.".format(r[0],r[1]))
-                    forRemove.append(np.mean(r))
-                else:
-                    contRegion.append(fluxRange)
+                contRegion.append(fluxRange)
+                # if len(fluxRange[0]) == 0: # Removing empty ranges
+                # # Problems with removing history entries, Move control of
+                # # adding empty ranges to spanSelector callback function
+                #     print("Empty range {:.5f} - {:.5f} will be removed.".format(r[0],r[1]))
+                #     forRemove.append(np.mean(r))
+                # else:
+                #     contRegion.append(fluxRange)
             contRegionsWaveAndFlux.append(contRegion)
-        for wMean in forRemove:
-            self.deleteRegionOrPoint(wMean,0.0)
+        # for wMean in forRemove:
+        #     self.deleteRegionOrPoint(wMean,0.0)
         return contRegionsWaveAndFlux
 
     def saveLast(self):
