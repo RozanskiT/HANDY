@@ -17,7 +17,7 @@ in regular grid of spectra.
 
 class GridSynthesizer:
     def __init__(self,
-                folder = "/bigGrid/",
+                folder = "bigGrid",
                 refWave = "refWave.dat",
                 paramsList = ["teff","logg","vmic","me"],
                 paramsNum = {"teff":1,"logg":2,"vmic":3,"me":0},
@@ -38,9 +38,9 @@ class GridSynthesizer:
         self.comments = comments
         self.fluxFilesFilter = fluxFilesFilter
 
-        dirname = os.path.dirname(os.path.abspath(__file__))
-        self.gridFolder = dirname + folder
-        self.wavelengthFileName = self.gridFolder + refWave
+        dirname = os.path.normpath(os.path.dirname(os.path.abspath(__file__)))
+        self.gridFolder = os.path.join(dirname, folder)
+        self.wavelengthFileName = os.path.join(self.gridFolder, refWave)
 
         self.ifCommonWavelength = False if refWave is None else True
         if self.ifCommonWavelength:
@@ -57,7 +57,7 @@ class GridSynthesizer:
         """
         List all model files available in grid
         """
-        return glob.glob(self.gridFolder + self.fluxFilesFilter)
+        return glob.glob(os.path.join(self.gridFolder, self.fluxFilesFilter))
 
 
     def loadRefWave(self):
@@ -203,7 +203,7 @@ def testInitClass():
 def testInitClass2():
     import matplotlib.pyplot as plt
     gs = GridSynthesizer(
-        folder = "/lowTempGrid/",
+        folder = "lowTempGrid",
         refWave = "waveRef.dat",
         paramsList = ["teff","logg"],
         paramsNum = {"teff":0,"logg":1},

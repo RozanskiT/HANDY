@@ -23,7 +23,7 @@ class normAppLogic:
 
     def __init__(self,):
         self.folderHANDY = os.path.dirname(os.path.abspath(__file__))
-        gridDefinitionsFile = self.folderHANDY+"/gridsDefinitions.yaml"
+        gridDefinitionsFile = os.path.join(self.folderHANDY, "gridsDefinitions.yaml")
 
         self.continuumRegionsLogic = regionLogic.RegionLogic()
         self.radialVelocityEstimator = radialVelocity.RadialVelocity()
@@ -210,15 +210,15 @@ class normAppLogic:
 def testLoadSaveSpectrum():
     nal=normAppLogic()
 
-    nal.readSpectrum("exampleData/803432iuw.txt",skipRows=1)
-    nal.saveSpectrum("exampleData/saveTest.txt")
+    nal.readSpectrum(os.path.join("exampleData", "803432iuw.txt"),skipRows=1)
+    nal.saveSpectrum(os.path.join("exampleData", "saveTest.txt"))
 
     print(nal.spectrum)
     #nal.plotSpectrum()
 
 def testGetContinuum():
     nal=normAppLogic()
-    nal.readSpectrum("exampleData/803432iuw.txt",skipRows=1)
+    nal.readSpectrum(os.path.join("exampleData", "803432iuw.txt"),skipRows=1)
 
     nal.continuumRegionsLogic.addRegion([4850,4890])
     nal.continuumRegionsLogic.addRegion([5000,5100])

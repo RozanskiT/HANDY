@@ -662,7 +662,7 @@ class NormSpectra(tkinter.Tk):
     def onKeyPress(self,event):
         if event.key == 'n':
             if self.appLogic.spectrum.name is not None:
-                fit = os.path.dirname(self.appLogic.spectrum.name)+"/*fits"
+                fit = os.path.join(os.path.dirname(self.appLogic.spectrum.name), "*fits")
                 # print(self.appLogic.spectrum.name)
                 # print(fit)
                 filesInFolder=glob.glob(fit)

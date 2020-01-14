@@ -25,7 +25,7 @@ class gridDefinition:
         try:
             with open(configurationFile,'r') as f:
                 data = f.read()
-            data = yaml.load(data)
+            data = yaml.load(data, Loader=yaml.FullLoader)
         except Exception as e:
             print("ERRORS in configuration file {}!!!".format(configurationFile))
             sys.stderr.write("Exception: %s\n" % str(e))
@@ -41,10 +41,8 @@ class gridDefinition:
             return
         if gridName in self.gridDefinitions:
             self.choosenGrid = self.gridDefinitions[gridName]
-            if self.choosenGrid["folderName"][0] != '/':
-                self.choosenGrid["folderName"] = '/' + self.choosenGrid["folderName"]
-            if self.choosenGrid["folderName"][-1] != '/':
-                self.choosenGrid["folderName"] += '/'
+            if "/" in self.choosenGrid["folderName"]:
+                self.choosenGrid["folderName"] = self.choosenGrid["folderName"].replace("/", "")
         else:
             print("Chosen grid doesn't exist")
 
