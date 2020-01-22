@@ -558,7 +558,6 @@ class NormSpectra(tkinter.Tk):
 
         contRegionsWaveAndFlux = self.appLogic.getContinuumRangesForPlot()
         self.replotUpdatedRanges(contRegionsWaveAndFlux, ifAutoscale=True)
-        return
 
     def onAutoFitSpecialPoints(self):
         self.appLogic.continuumRegionsLogic.autoFitPoints(self.appLogic.theoreticalSpectrum)
