@@ -533,28 +533,29 @@ class NormSpectra(tkinter.Tk):
         self.span.set_visible(True)
 
     def onNextSpectrum(self):
-        if not self.appLogic.spectrum.name:  # do nothing if no files yet selected
-            return
-        currentIndex = self.fileList.index(self.appLogic.spectrum.name)
-        nextIndex = (currentIndex + 1) % len(self.fileList)
-        fileName = self.fileList[nextIndex]
-        skipRows = 1
-        colWave = 0
-        colFlux = 1
-        self.appLogic.readSpectrum(fileName, \
-                                   colWave=colWave, \
-                                   colFlux=colFlux, \
-                                   skipRows=skipRows)
-
-        self.appLogic.continuumRegionsLogic.updateRegionsAndPoints(self.appLogic.spectrum)
-        self.appLogic.continuum.wave = []
-        self.appLogic.continuum.flux = []
-        if self.ifAutoUpdateNormalization:
-            self.appLogic.normSpectrum()
-        self.onAlreadyNormed(reprint=False)
-
-        contRegionsWaveAndFlux = self.appLogic.getContinuumRangesForPlot()
-        self.replotUpdatedRanges(contRegionsWaveAndFlux, ifAutoscale=True)
+        if self.appLogic.spectrum.name is not None:
+            fit = os.path.join(os.path.dirname(self.appLogic.spectrum.name), "*fits")
+            # print(self.appLogic.spectrum.name)
+            # print(fit)
+            filesInFolder=glob.glob(fit)
+            filesInFolder.sort()
+            n = filesInFolder.index(self.appLogic.spectrum.name) + 1
+            if n < len(filesInFolder):
+                fileName = filesInFolder[n]
+                skipRows=1
+                colWave=0
+                colFlux=1
+                self.appLogic.readSpectrum(fileName,\
+                                           colWave=colWave,\
+                                           colFlux=colFlux,\
+                                           skipRows=skipRows)
+                self.appLogic.continuumRegionsLogic.updateRegionsAndPoints(self.appLogic.spectrum)
+                if self.ifAutoUpdateNormalization:
+                    self.appLogic.normSpectrum()
+                contRegionsWaveAndFlux = self.appLogic.getContinuumRangesForPlot()
+                self.replotUpdatedRanges(contRegionsWaveAndFlux,ifAutoscale=True)
+            else:
+                print("Last spectrum in choosen folder!")
 
     def onAutoFitSpecialPoints(self):
         self.appLogic.continuumRegionsLogic.autoFitPoints(self.appLogic.theoreticalSpectrum)
@@ -685,31 +686,9 @@ class NormSpectra(tkinter.Tk):
 
     def onKeyPress(self,event):
         if event.key == 'n':
-            if self.appLogic.spectrum.name is not None:
-                fit = os.path.join(os.path.dirname(self.appLogic.spectrum.name), "*fits")
-                # print(self.appLogic.spectrum.name)
-                # print(fit)
-                filesInFolder=glob.glob(fit)
-                filesInFolder.sort()
-                n = filesInFolder.index(self.appLogic.spectrum.name) + 1
-                if n < len(filesInFolder):
-                    fileName = filesInFolder[n]
-                    skipRows=1
-                    colWave=0
-                    colFlux=1
-                    self.appLogic.readSpectrum(fileName,\
-                                               colWave=colWave,\
-                                               colFlux=colFlux,\
-                                               skipRows=skipRows)
-                    self.appLogic.continuumRegionsLogic.updateRegionsAndPoints(self.appLogic.spectrum)
-                    if self.ifAutoUpdateNormalization:
-                        self.appLogic.normSpectrum()
-                    contRegionsWaveAndFlux = self.appLogic.getContinuumRangesForPlot()
-                    self.replotUpdatedRanges(contRegionsWaveAndFlux,ifAutoscale=True)
-                else:
-                    print("Last spectrum in choosen folder!")
+            self.onNextSpectrum()
         key_press_handler(event, self.canvas, self.toolbar)
-        print("TODO: add some shortcuts to buttons")
+        # print("TODO: add some shortcuts to buttons")
 
     def onPlotClick(self,event):
         if self.toolbar.mode!='':
