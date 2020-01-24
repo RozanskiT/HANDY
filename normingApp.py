@@ -34,6 +34,8 @@ class NormSpectra(tkinter.Tk):
 
         self.radVelDialog = None
 
+        self.fileList = []
+
     def __init__(self):
         tkinter.Tk.__init__(self)
         self.__initAttributes__()
@@ -138,7 +140,8 @@ class NormSpectra(tkinter.Tk):
         ftypes = [('All files', '*'),('FITS files', '*fits'),('Plain text', '*.txt *.dat')]
         answer = filedialog.askopenfilenames(title="Open spectrum...", initialdir=dirname, filetypes=ftypes)
         if answer:
-            fileName = answer[0]
+            self.fileList = answer
+            fileName = self.fileList[0]
             skipRows=1
             colWave=0
             colFlux=1
@@ -530,7 +533,28 @@ class NormSpectra(tkinter.Tk):
         self.span.set_visible(True)
 
     def onNextSpectrum(self):
-        pass
+        if not self.appLogic.spectrum.name:  # do nothing if no files yet selected
+            return
+        currentIndex = self.fileList.index(self.appLogic.spectrum.name)
+        nextIndex = (currentIndex + 1) % len(self.fileList)
+        fileName = self.fileList[nextIndex]
+        skipRows = 1
+        colWave = 0
+        colFlux = 1
+        self.appLogic.readSpectrum(fileName, \
+                                   colWave=colWave, \
+                                   colFlux=colFlux, \
+                                   skipRows=skipRows)
+
+        self.appLogic.continuumRegionsLogic.updateRegionsAndPoints(self.appLogic.spectrum)
+        self.appLogic.continuum.wave = []
+        self.appLogic.continuum.flux = []
+        if self.ifAutoUpdateNormalization:
+            self.appLogic.normSpectrum()
+        self.onAlreadyNormed(reprint=False)
+
+        contRegionsWaveAndFlux = self.appLogic.getContinuumRangesForPlot()
+        self.replotUpdatedRanges(contRegionsWaveAndFlux, ifAutoscale=True)
 
     def onAutoFitSpecialPoints(self):
         self.appLogic.continuumRegionsLogic.autoFitPoints(self.appLogic.theoreticalSpectrum)
