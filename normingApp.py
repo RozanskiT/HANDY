@@ -34,6 +34,8 @@ class NormSpectra(tkinter.Tk):
 
         self.radVelDialog = None
 
+        self.fileList = []
+
     def __init__(self):
         tkinter.Tk.__init__(self)
         self.__initAttributes__()
@@ -138,7 +140,8 @@ class NormSpectra(tkinter.Tk):
         ftypes = [('All files', '*'),('FITS files', '*fits'),('Plain text', '*.txt *.dat')]
         answer = filedialog.askopenfilenames(title="Open spectrum...", initialdir=dirname, filetypes=ftypes)
         if answer:
-            fileName = answer[0]
+            self.fileList = answer
+            fileName = self.fileList[0]
             skipRows=1
             colWave=0
             colFlux=1
@@ -530,7 +533,29 @@ class NormSpectra(tkinter.Tk):
         self.span.set_visible(True)
 
     def onNextSpectrum(self):
-        pass
+        if self.appLogic.spectrum.name is not None:
+            fit = os.path.join(os.path.dirname(self.appLogic.spectrum.name), "*fits")
+            # print(self.appLogic.spectrum.name)
+            # print(fit)
+            filesInFolder=glob.glob(fit)
+            filesInFolder.sort()
+            n = filesInFolder.index(self.appLogic.spectrum.name) + 1
+            if n < len(filesInFolder):
+                fileName = filesInFolder[n]
+                skipRows=1
+                colWave=0
+                colFlux=1
+                self.appLogic.readSpectrum(fileName,\
+                                           colWave=colWave,\
+                                           colFlux=colFlux,\
+                                           skipRows=skipRows)
+                self.appLogic.continuumRegionsLogic.updateRegionsAndPoints(self.appLogic.spectrum)
+                if self.ifAutoUpdateNormalization:
+                    self.appLogic.normSpectrum()
+                contRegionsWaveAndFlux = self.appLogic.getContinuumRangesForPlot()
+                self.replotUpdatedRanges(contRegionsWaveAndFlux,ifAutoscale=True)
+            else:
+                print("Last spectrum in choosen folder!")
 
     def onAutoFitSpecialPoints(self):
         self.appLogic.continuumRegionsLogic.autoFitPoints(self.appLogic.theoreticalSpectrum)
@@ -661,31 +686,9 @@ class NormSpectra(tkinter.Tk):
 
     def onKeyPress(self,event):
         if event.key == 'n':
-            if self.appLogic.spectrum.name is not None:
-                fit = os.path.join(os.path.dirname(self.appLogic.spectrum.name), "*fits")
-                # print(self.appLogic.spectrum.name)
-                # print(fit)
-                filesInFolder=glob.glob(fit)
-                filesInFolder.sort()
-                n = filesInFolder.index(self.appLogic.spectrum.name) + 1
-                if n < len(filesInFolder):
-                    fileName = filesInFolder[n]
-                    skipRows=1
-                    colWave=0
-                    colFlux=1
-                    self.appLogic.readSpectrum(fileName,\
-                                               colWave=colWave,\
-                                               colFlux=colFlux,\
-                                               skipRows=skipRows)
-                    self.appLogic.continuumRegionsLogic.updateRegionsAndPoints(self.appLogic.spectrum)
-                    if self.ifAutoUpdateNormalization:
-                        self.appLogic.normSpectrum()
-                    contRegionsWaveAndFlux = self.appLogic.getContinuumRangesForPlot()
-                    self.replotUpdatedRanges(contRegionsWaveAndFlux,ifAutoscale=True)
-                else:
-                    print("Last spectrum in choosen folder!")
+            self.onNextSpectrum()
         key_press_handler(event, self.canvas, self.toolbar)
-        print("TODO: add some shortcuts to buttons")
+        # print("TODO: add some shortcuts to buttons")
 
     def onPlotClick(self,event):
         if self.toolbar.mode!='':
