@@ -1,6 +1,6 @@
 # HANDY - Handy tool for spectra normalization
 
-HANDY is interactive Python3 program for spectrum normalization. The normalization process is based on "regions" and "ranges". "Ranges" are continuum parts defined manually by user (or uploaded from file from previous program run) which will be used for continuum level fit. "Regions" are groups of ranges for whom single chebyshev polynomial of chosen order is fitted. Polynomial fits are connected with the use of Akima'a spline interpolation. The program offers graphical access to theoretical grid of spectra for obtaining an idea about processed star atmosphere parameters and interface for radial velocity correction. Different grids of spectra can be easly added by the user. 
+HANDY is interactive Python3 program for spectrum normalization. The normalization process is based on "regions" and "ranges". "Ranges" are continuum parts defined manually by user (or uploaded from file from previous program run) which will be used for continuum level fit. "Regions" are groups of ranges for whom single chebyshev polynomial of chosen order is fitted. Polynomial fits are connected with the use of Akima'a spline interpolation. The program offers graphical access to theoretical grid of spectra for obtaining an idea about processed star atmosphere parameters and interface for radial velocity correction. Different grids of spectra can be easly added by the user.
 
 <p align="center">
   <a href="#key-features">Key Features</a> •
@@ -21,7 +21,7 @@ HANDY is interactive Python3 program for spectrum normalization. The normalizati
 * Easy access to precomputed grid of NLTE stars spectra (computed with SYNSPEC, with use of BSTAR2006 models)
   - NLTE line blanketed model atmospheres of hot stars. I. Hybrid Complete Linearization/Accelerated Lambda Iteration Method, 1995, Hubeny, I., & Lanz, T., Astrophysical Journal, 439, 875
 * Adding user defined grids
-* Radial velocity correction 
+* Radial velocity correction
 * Developed and tested on Linux
 * Easy installation and easy to use
 
@@ -44,7 +44,7 @@ Two steps:
   [HANDY-master.zip](https://github.com/RozanskiT/HANDY/archive/master.zip)
 * Download and untar folders with grids in your project catalog
   - Can be downloaded from : [Grids](https://drive.google.com/open?id=1VH5hQ5toTWuPFA_6vIpD1aZxs6u0nmia)
-  
+
 ### Installing
 
 You need Python3 with all needed packages.
@@ -111,6 +111,8 @@ This project is licensed under the MIT License - see the [LICENSE.txt](LICENSE.t
 
 ## Acknowledgments
 
+* Ewa Niemczura
+* [@Manuel Dornacher](https://github.com/MDornacher)
 * [iSpec](http://adsabs.harvard.edu/abs/2014A%26A...569A.111B), by. S. Blanco-Cuaresma
 * [PyAstronomy](https://github.com/sczesla/PyAstronomy)
 * [SciPy](https://www.scipy.org/)
