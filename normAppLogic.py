@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-import os
+import os, sys
 import numpy as np
 import pandas as pd
 import copy
@@ -13,6 +13,10 @@ import regionLogic
 import radialVelocity
 import specInterface
 import gridDefinitionsRead
+
+from vidmapy.kurucz.atlas import Atlas
+from vidmapy.kurucz.synthe import Synthe
+from vidmapy.kurucz.parameters import Parameters
 
 """
 DESCRIPTION
@@ -39,6 +43,9 @@ class normAppLogic:
                                           flux=[])
         self.radialVelocity = 0.0
         self.oryginalWavelength = None
+
+        self.minWave = 3500
+        self.maxWave = 7000
 
 
     def readSpectrum(self,fileName,colWave=0,colFlux=1,skipRows=0):
@@ -70,6 +77,16 @@ class normAppLogic:
         sp.saveSpectrum(fileName,self.spectrum)
         print("INFO : %s saved!"%fileName)
 
+    def getLinesIdentification(self, threshold=0.99):
+        self._lines_label_threshold = threshold
+        mask = self.theoreticalSpectrum.lines_identification["strength"] < self._lines_label_threshold
+        self._displayed_subset_of_lines = self.theoreticalSpectrum.lines_identification[mask].reset_index(drop=True)
+        return self._displayed_subset_of_lines["wave"].values
+
+    def getLineLabelText(self, index):
+        text = "{}-{:.1f}-{}".format(self._displayed_subset_of_lines.loc[index,"atom_symbol"],self._displayed_subset_of_lines.loc[index,"wave"],self._displayed_subset_of_lines.loc[index,"strength"])
+        return text
+
     def readTheoreticalSpectrum(self,fileName,colWave=0,colFlux=1,skipRows=0):
         self.theoreticalSpectrum = sp.readSpectrum(fileName,\
                                                    colWave=colWave,\
@@ -81,9 +98,47 @@ class normAppLogic:
         # There was a bug - sometimes data from TKinter comes as string, so:
         parameters = [p if p is not str else float(p.replace(",","."))for p in parameters]
         try:
-            self.theoreticalSpectrum = self.specSynthesizer.synthesizeSpectrum(parameters,minWave = 3500, maxWave = 7000)
+            self.theoreticalSpectrum = self.specSynthesizer.synthesizeSpectrum(parameters,
+                                            minWave = self.minWave, 
+                                            maxWave = self.maxWave)
         except:
+            print("Unexpected error:", sys.exc_info()[0])
             print("Spectrum out of grid or some interpolation bug...")
+
+    def computeSpectrumUsingSYNTHE(self,teff,logg,vmic,me,vsini,vmac,resolution,minWave=None,maxWave=None):
+        resolution = min(resolution, 500000)
+        if minWave is None:
+            minWave = self.minWave
+        if maxWave is None:
+            maxWave = self.maxWave
+        parameters = Parameters(teff=teff, 
+                                logg=logg, 
+                                metallicity=me, 
+                                microturbulence=vmic,
+                                vsini=vsini,
+                                resolution=resolution,
+                                wave_min=minWave,
+                                wave_max=maxWave)
+        try:
+            if not (hasattr(self, '_atlas_model') and self._atlas_model.parameters == parameters):
+                print("Start ATLAS model computation")
+                atlasWorker = Atlas()
+                self._atlas_model = atlasWorker.get_model(parameters)
+                print("ALTAS model computation finished")
+
+            syntheWorker = Synthe()
+            print("Start SYNTHE spectrum computation")
+            spectrum = syntheWorker.get_spectrum(self._atlas_model, parameters)
+            print("SYNTHE spectrum computation finished")
+
+            self.theoreticalSpectrum = sp.Spectrum(wave=spectrum.wave, 
+                                                    flux=spectrum.normed_flux, 
+                                                    lines_identification=spectrum.lines_identification)
+        except:
+            print("ERROR: SYNTHE/ATLAS error!")
+            print("Unexpected error:", sys.exc_info()[0])
+
+        
 
     def saveNormedSpectrum(self,fileName,correctForRadialVelocity):
         saveSpectrum = copy.deepcopy(self.normedSpectrum)

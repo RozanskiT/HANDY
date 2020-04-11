@@ -1,0 +1,3 @@
+[submodule "vidmapy"]
+	path = vidmapy
+	url = https://github.com/RozanskiT/vidmapy.git

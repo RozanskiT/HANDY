@@ -11,6 +11,7 @@ from matplotlib.backend_bases import key_press_handler
 from matplotlib.widgets import SpanSelector
 from matplotlib.figure import Figure
 from matplotlib.ticker import ScalarFormatter, MaxNLocator
+from matplotlib.collections import LineCollection
 import matplotlib.pyplot as plt
 import numpy as np
 import glob
@@ -80,7 +81,7 @@ class NormSpectra(tkinter.Tk):
                               command=self.onSaveTheoreticalSpectrum)
         #------------------------------------
         fileMenu3 = tkinter.Menu(menu)
-        menu.add_cascade(label="Grids", underline=0, menu=fileMenu3)
+        menu.add_cascade(label="Spectrum", underline=0, menu=fileMenu3)
         self.vlevel = tkinter.IntVar()
         lG = self.appLogic.gridDefinitions.listAvailibleGrids()
         self.appLogic.gridDefinitions.setChoosenGrid(lG[0])
@@ -92,6 +93,13 @@ class NormSpectra(tkinter.Tk):
                                       command = self.onChooseGrid
                                       )
         # self.vlevel.set(0)
+        fileMenu3.add_separator()
+        self._syntheNumber = len(lG)
+        fileMenu3.add_radiobutton(label = "SYNTHE",
+                            var = self.vlevel,
+                            value = len(lG),
+                            command = self.onChooseSYNTHE
+                            )
 
     def onChooseGrid(self):
         lG = self.appLogic.gridDefinitions.listAvailibleGrids()
@@ -114,6 +122,8 @@ class NormSpectra(tkinter.Tk):
         )
         d = self.appLogic.gridDefinitions.getDefinedVariables()
         setVal = {True: 'normal', False: 'disabled'}
+        self.vmacScale['state'] = setVal[True]
+        self.vsiniScale['state'] = setVal[True]
         self.teffScale['state'] = setVal[d["teff"]]
         self.loggScale['state'] = setVal[d["logg"]]
         self.vmicScale['state'] = setVal[d["vmic"]]
@@ -132,6 +142,20 @@ class NormSpectra(tkinter.Tk):
                 minim = np.round(np.log10(minim),2)
             maxim = np.round(np.log10(maxim),2)
             self.meScale['from_'] ,self.meScale['to'] = minim, maxim
+
+    def onChooseSYNTHE(self):
+        setVal = {True: 'normal', False: 'disabled'}
+        self.vmacScale['state'] = setVal[False]
+        self.vsiniScale['state'] = setVal[True]
+        self.teffScale['state'] = setVal[True]
+        self.loggScale['state'] = setVal[True]
+        self.vmicScale['state'] = setVal[True]
+        self.meScale['state'] = setVal[True]
+
+        self.teffScale['from_'], self.teffScale['to'] = 4000, 35000
+        self.loggScale['from_'], self.loggScale['to'] = 2.0, 6.0
+        self.vmicScale['from_'], self.vmicScale['to'] = 0.0, 15.0
+        self.meScale['from_'], self.meScale['to'] = -3.0, 0.6
 
     def onOpenSpectrum(self):
         dirname = os.getcwd()
@@ -565,6 +589,61 @@ class NormSpectra(tkinter.Tk):
                  +"Load theoretical spectra first!")
 
     def onComputeTheoreticalSpectrum(self):
+        if self.vlevel.get() == self._syntheNumber:
+            self.getTheoreticalSpectrumUsingSynthe()
+        else:
+            self.getTheoreticalSpectrumFromGrid()
+        self.updateTheoreticalSpectrumPlot()
+        if self.appLogic.theoreticalSpectrum.wave is not None and len(self.appLogic.theoreticalSpectrum.wave)!=0:
+            self.updateErrorPlot()
+        self.canvas.draw()
+    
+    def updateTheoreticalSpectrumPlot(self):
+        wave = self.appLogic.theoreticalSpectrum.wave if self.appLogic.theoreticalSpectrum.wave is not None else []
+        flux = self.appLogic.theoreticalSpectrum.flux if self.appLogic.theoreticalSpectrum.flux is not None else []
+        self.line23.set_data(wave,flux)
+
+        if self.appLogic.theoreticalSpectrum.lines_identification is not None:
+            lines_wavelengths = self.appLogic.getLinesIdentification()
+            segments = [((x, 1.0), (x, 1.1)) for x in lines_wavelengths]
+            self.lines_indicators.set_segments(segments)
+
+    def onHover(self, event):
+        if event.inaxes == self.ax2:
+            cont, ind = self.lines_indicators.contains(event)
+            if cont:
+                self.upateAnnotation(ind, event)
+                self.line_annotation.set_visible(True)
+                self.canvas.draw()
+            else:
+                if self.line_annotation.get_visible():
+                    self.line_annotation.set_visible(False)
+                    self.canvas.draw()
+
+    def upateAnnotation(self, ind, event):
+        pos = (event.xdata, event.ydata)
+        self.line_annotation.xy = pos
+        text = "{}".format("; ".join([self.appLogic.getLineLabelText(n) for n in ind["ind"]]))
+
+        self.line_annotation.set_text(text)
+        self.line_annotation.get_bbox_patch().set_facecolor('w')
+        self.line_annotation.get_bbox_patch().set_alpha(0.9)
+
+
+    def getTheoreticalSpectrumUsingSynthe(self):
+        minWave, maxWave = self.ax1.get_xlim()
+        self.appLogic.computeSpectrumUsingSYNTHE(self.teffVar.get(),
+                                                self.loggVar.get(),
+                                                self.vmicVar.get(),
+                                                self.meVar.get(),
+                                                self.vsiniVar.get(),
+                                                self.vmacVar.get(),
+                                                float(self.resolution.get()),
+                                                minWave,
+                                                maxWave
+                                                )
+
+    def getTheoreticalSpectrumFromGrid(self):
         self.appLogic.computeTheoreticalSpectrum(self.teffVar.get(),
                                                 self.loggVar.get(),
                                                 self.vmicVar.get(),
@@ -573,12 +652,6 @@ class NormSpectra(tkinter.Tk):
                                                 self.vmacVar.get(),
                                                 float(self.resolution.get()),
                                                 )
-        wt = self.appLogic.theoreticalSpectrum.wave if self.appLogic.theoreticalSpectrum.wave is not None else []
-        ft = self.appLogic.theoreticalSpectrum.flux if self.appLogic.theoreticalSpectrum.flux is not None else []
-        self.line23.set_data(wt,ft)
-        if self.appLogic.theoreticalSpectrum.wave is not None and len(self.appLogic.theoreticalSpectrum.wave)!=0:
-            self.updateErrorPlot()
-        self.canvas.draw()
 
     def onClearTheoreticalSpectrum(self):
         self.appLogic.theoreticalSpectrum.wave = None
@@ -629,8 +702,15 @@ class NormSpectra(tkinter.Tk):
         self.ax2 = self.fig.add_subplot(gs[2:4],sharex=self.ax1)
         self.ax2.grid(True)
         self.line21,self.line22,self.line23 = self.ax2.plot([],[],'k',\
-                                                            [],[],'b',\
+                                                            [],[],'b--',\
                                                             [],[],'b')
+        self.lines_indicators = self.ax2.add_collection(LineCollection([]))
+        self.line_annotation = self.ax2.annotate("", xy=(0,0), xytext=(20,20),textcoords="offset points",
+                                    bbox=dict(boxstyle="round", fc="w"),
+                                    arrowprops=dict(arrowstyle="->"), 
+                                    zorder=40)
+        self.line_annotation.set_visible(False)
+
         # self.ax3 = self.fig.add_subplot(313,sharex=self.ax1)
         self.ax3 = self.fig.add_subplot(gs[-1],sharex=self.ax1)
         self.ax3.grid(True)
@@ -645,7 +725,7 @@ class NormSpectra(tkinter.Tk):
 
         self.canvas.mpl_connect('button_press_event', self.onPlotClick)
         self.canvas.mpl_connect('button_release_event', self.onPlotRealise)
-        #self.canvas.mpl_connect('motion_notify_event', self.on_motion)
+        self.canvas.mpl_connect('motion_notify_event', self.onHover)
         self.canvas.mpl_connect('key_press_event', self.onKeyPress)
         self.toolbar = NavigationToolbar(self.canvas, self.plotFrame)
         self.toolbar.update()

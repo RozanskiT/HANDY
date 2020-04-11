@@ -29,13 +29,15 @@ def saveSpectrum(filename,spectrum):
 
 class Spectrum:
 
-    def __init__(self,name=None,\
-                 wave=None,\
-                 flux=None,\
+    def __init__(self,name=None,
+                 wave=None,
+                 flux=None,
+                 lines_identification=None,
                  ):
         self.name=name
         self.wave=wave
         self.flux=flux
+        self.lines_identification=lines_identification
 
     def __repr__(self):
         return "SPECTRUM: " + str(self.name)
