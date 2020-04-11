@@ -17,6 +17,7 @@ import gridDefinitionsRead
 from vidmapy.kurucz.atlas import Atlas
 from vidmapy.kurucz.synthe import Synthe
 from vidmapy.kurucz.parameters import Parameters
+from vidmapy.kurucz.utility_functions import string_from_kurucz_code
 
 """
 DESCRIPTION
@@ -77,15 +78,55 @@ class normAppLogic:
         sp.saveSpectrum(fileName,self.spectrum)
         print("INFO : %s saved!"%fileName)
 
-    def getLinesIdentification(self, threshold=0.99):
+    def getLinesIdentification(self, threshold=0.99, shape=0):
         self._lines_label_threshold = threshold
         mask = self.theoreticalSpectrum.lines_identification["strength"] < self._lines_label_threshold
         self._displayed_subset_of_lines = self.theoreticalSpectrum.lines_identification[mask].reset_index(drop=True)
-        return self._displayed_subset_of_lines["wave"].values
+        return self.defineIndicatorsShapes(shape)
+
+    def defineIndicatorsShapes(self, shape):
+        # lines_wavelengths = self._displayed_subset_of_lines["wave"].values
+        segments = []
+        if shape == 1:
+            self.getTextPositions()
+            segments = [self.getSegment(row) for idx, row in self._displayed_subset_of_lines.iterrows()]
+        elif shape == 2:
+            segments = [self.getSimpleSegment(row) for idx, row in self._displayed_subset_of_lines.iterrows()]
+        return segments
+
+
+    def getTextPositions(self):
+        self._displayed_subset_of_lines['text_x'] = np.linspace(self._displayed_subset_of_lines['wave'].min(),
+                                                        self._displayed_subset_of_lines['wave'].max(),
+                                                        num=len(self._displayed_subset_of_lines))   
+
+    def getSegment(self, row):
+        x = row['wave']
+        depth = row['strength']
+        text_x = row['text_x']
+        segment = ((x,depth),(x, 1.0), (text_x, 1.1), (text_x, 2.1 - depth))
+        return segment
+    
+    def getSimpleSegment(self, row):
+        x = row['wave']
+        depth = row['strength']
+        segment = ((x,depth),(x, 1.05))
+        return segment     
+
+    def getLabelsAndPositions(self):
+        if not 'text_x' in self._displayed_subset_of_lines:
+            self.getTextPositions()
+        positions = [(x, 1.1) for x in self._displayed_subset_of_lines['text_x']]
+        texts = [self.getLineLabelTextIterrows(row) for idx, row in self._displayed_subset_of_lines.iterrows()]
+        return texts, positions
+    
+    def getLineLabelTextIterrows(self, row):
+        text = "{} {:.1f} {:.2f}".format(string_from_kurucz_code(row["atom_symbol"]), row["wave"],row["strength"])
+        return text
 
     def getLineLabelText(self, index):
-        text = "{}-{:.1f}-{}".format(self._displayed_subset_of_lines.loc[index,"atom_symbol"],self._displayed_subset_of_lines.loc[index,"wave"],self._displayed_subset_of_lines.loc[index,"strength"])
-        return text
+        row = self._displayed_subset_of_lines.loc[index,:]
+        return self.getLineLabelTextIterrows(row)
 
     def readTheoreticalSpectrum(self,fileName,colWave=0,colFlux=1,skipRows=0):
         self.theoreticalSpectrum = sp.readSpectrum(fileName,\
@@ -130,6 +171,10 @@ class normAppLogic:
             print("Start SYNTHE spectrum computation")
             spectrum = syntheWorker.get_spectrum(self._atlas_model, parameters)
             print("SYNTHE spectrum computation finished")
+
+            mask_wave = (spectrum.lines_identification['wave'] > minWave) & (spectrum.lines_identification['wave'] < maxWave)
+            spectrum.lines_identification = spectrum.lines_identification[mask_wave]
+            spectrum.lines_identification.sort_values('wave', inplace=True)
 
             self.theoreticalSpectrum = sp.Spectrum(wave=spectrum.wave, 
                                                     flux=spectrum.normed_flux, 

@@ -100,6 +100,17 @@ class NormSpectra(tkinter.Tk):
                             value = len(lG),
                             command = self.onChooseSYNTHE
                             )
+        #------------------------------------
+        fileMenu4 = tkinter.Menu(menu)
+        menu.add_cascade(label="Line labels", underline=0, menu=fileMenu4)
+
+        self.labelSettings = tkinter.IntVar()
+        self.labelSettings.set(0)
+
+        fileMenu4.add_radiobutton(label="No labels", value=0, variable=self.labelSettings, command = self.onCheckLabelSettings)
+        fileMenu4.add_separator()
+        fileMenu4.add_radiobutton(label="Show all", value=1, variable=self.labelSettings, command = self.onCheckLabelSettings)
+        fileMenu4.add_radiobutton(label="On hower", value=2, variable=self.labelSettings, command = self.onCheckLabelSettings)
 
     def onChooseGrid(self):
         lG = self.appLogic.gridDefinitions.listAvailibleGrids()
@@ -156,6 +167,11 @@ class NormSpectra(tkinter.Tk):
         self.loggScale['from_'], self.loggScale['to'] = 2.0, 6.0
         self.vmicScale['from_'], self.vmicScale['to'] = 0.0, 15.0
         self.meScale['from_'], self.meScale['to'] = -3.0, 0.6
+
+    def onCheckLabelSettings(self):
+        self.updateLinesAnnotations()
+        self.canvas.draw()
+
 
     def onOpenSpectrum(self):
         dirname = os.getcwd()
@@ -594,6 +610,7 @@ class NormSpectra(tkinter.Tk):
         else:
             self.getTheoreticalSpectrumFromGrid()
         self.updateTheoreticalSpectrumPlot()
+        self.updateLinesAnnotations()
         if self.appLogic.theoreticalSpectrum.wave is not None and len(self.appLogic.theoreticalSpectrum.wave)!=0:
             self.updateErrorPlot()
         self.canvas.draw()
@@ -603,15 +620,24 @@ class NormSpectra(tkinter.Tk):
         flux = self.appLogic.theoreticalSpectrum.flux if self.appLogic.theoreticalSpectrum.flux is not None else []
         self.line23.set_data(wave,flux)
 
+    def updateLinesAnnotations(self):
+        for i in range(len(self.lines_annotations)): # Remove existing texts from axis and empty list
+            self.lines_annotations[-1].remove()
+            self.lines_annotations.pop()
+        self.lines_indicators.set_segments([])
+
         if self.appLogic.theoreticalSpectrum.lines_identification is not None:
-            lines_wavelengths = self.appLogic.getLinesIdentification()
-            segments = [((x, 1.0), (x, 1.1)) for x in lines_wavelengths]
-            self.lines_indicators.set_segments(segments)
+            segments = self.appLogic.getLinesIdentification(shape=self.labelSettings.get())
+            self.lines_indicators.set_segments(segments)   
+            if self.labelSettings.get() == 1:
+                texts, positions = self.appLogic.getLabelsAndPositions()
+                for text, (x,y) in zip(texts, positions):
+                    self.lines_annotations.append(self.ax2.text(x, y, text, rotation=90, ha='right', va='bottom'))
 
     def onHover(self, event):
-        if event.inaxes == self.ax2:
+        if event.inaxes == self.ax2 and self.labelSettings.get() == 2:
             cont, ind = self.lines_indicators.contains(event)
-            if cont:
+            if cont :
                 self.upateAnnotation(ind, event)
                 self.line_annotation.set_visible(True)
                 self.canvas.draw()
@@ -656,7 +682,9 @@ class NormSpectra(tkinter.Tk):
     def onClearTheoreticalSpectrum(self):
         self.appLogic.theoreticalSpectrum.wave = None
         self.appLogic.theoreticalSpectrum.flux = None
+        self.appLogic.theoreticalSpectrum.lines_identification = None
         self.line23.set_data([],[])
+        self.updateLinesAnnotations()
         self.updateErrorPlot()
         self.canvas.draw()
 
@@ -704,8 +732,12 @@ class NormSpectra(tkinter.Tk):
         self.line21,self.line22,self.line23 = self.ax2.plot([],[],'k',\
                                                             [],[],'b--',\
                                                             [],[],'b')
-        self.lines_indicators = self.ax2.add_collection(LineCollection([]))
-        self.line_annotation = self.ax2.annotate("", xy=(0,0), xytext=(20,20),textcoords="offset points",
+        self.lines_indicators = self.ax2.add_collection(LineCollection([], colors='#FF8800'))
+        self.lines_annotations = []
+        self.line_annotation = self.ax2.annotate("", xy=(0,0), 
+                                    xytext=(20,20),
+                                    # rotation=90,
+                                    textcoords="offset points",
                                     bbox=dict(boxstyle="round", fc="w"),
                                     arrowprops=dict(arrowstyle="->"), 
                                     zorder=40)
@@ -719,7 +751,7 @@ class NormSpectra(tkinter.Tk):
 
         self.ax1.set_autoscaley_on(True)
         #self.ax2.set_autoscaley_on(False)
-        self.ax2.set_ylim([0.2,1.1])
+        self.ax2.set_ylim([0.1,2.0])
 
         box = self.ax1.get_position()
 
