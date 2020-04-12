@@ -78,11 +78,16 @@ class normAppLogic:
         sp.saveSpectrum(fileName,self.spectrum)
         print("INFO : %s saved!"%fileName)
 
-    def getLinesIdentification(self, threshold=0.99, shape=0):
-        self._lines_label_threshold = threshold
-        mask = self.theoreticalSpectrum.lines_identification["strength"] < self._lines_label_threshold
-        self._displayed_subset_of_lines = self.theoreticalSpectrum.lines_identification[mask].reset_index(drop=True)
+    def getLinesIdentification(self, threshold=None, shape=0):
+        if threshold is not None:
+            self.setLabelsThreshold(threshold)
+        if self.theoreticalSpectrum.lines_identification is not None:
+            mask = self.theoreticalSpectrum.lines_identification["strength"] < self._lines_label_threshold
+            self._displayed_subset_of_lines = self.theoreticalSpectrum.lines_identification[mask].reset_index(drop=True)
         return self.defineIndicatorsShapes(shape)
+
+    def setLabelsThreshold(self, threshold):
+        self._lines_label_threshold = threshold
 
     def defineIndicatorsShapes(self, shape):
         # lines_wavelengths = self._displayed_subset_of_lines["wave"].values

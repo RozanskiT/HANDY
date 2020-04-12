@@ -3,6 +3,8 @@
 import os
 
 import tkinter
+from tkinter import ttk
+from tkinter.font import Font
 import tkinter.filedialog as filedialog
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg as FigCanvas
 from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk as NavigationToolbar
@@ -41,17 +43,17 @@ class NormSpectra(tkinter.Tk):
         self.createMainWindow()
 
     def createMainWindow(self):
+        self.WENS = tkinter.W+tkinter.E+tkinter.N+tkinter.S
         self.createWindow()
         self.createControls()
         self.createMenu()
         self.createPlottingArea()
-
+        
     def createWindow(self):
         self.frame = tkinter.Frame(self)
         self.frame.pack(fill=tkinter.BOTH, expand=1)
         self.wm_title("HANDY - Handy tool for spectra normalization")
 
-        # img = tkinter.PhotoImage(file=os.path.join(os.path.dirname(os.path.realpath(__file__)),"handyColor.gif"))
         img = tkinter.PhotoImage(file=os.path.join(os.path.dirname(os.path.realpath(__file__)),"handy.gif"))
         self.tk.call('wm', 'iconphoto', self._w, img)
 
@@ -275,78 +277,102 @@ class NormSpectra(tkinter.Tk):
 
     def createControls(self):
         # Create several frames for grouping buttons
-        self.controlFrame = tkinter.Frame(self.frame)
-        self.controlFrameA=tkinter.Frame(self.controlFrame)
-        self.controlFrameB=tkinter.Frame(self.controlFrame)
-        self.controlFrameC=tkinter.Frame(self.controlFrame)
+        self.controlNote = ttk.Notebook(self.frame)
 
-        WENS = tkinter.W+tkinter.E+tkinter.N+tkinter.S
+        self.controlFrameA=tkinter.Frame(self.controlNote)
+        self.controlFrameB=tkinter.Frame(self.controlNote)
+        self.controlFrameC=tkinter.Frame(self.controlNote)
+        self.controlFrameD=tkinter.Frame(self.controlNote)
+        
+
+        self.createNormalizationControls()
+        self.createModellingControls()
+        self.createOutputPlotControls()
+        self.createLabelControls()
+
+        self.controlFrameA.pack()
+        self.controlFrameB.pack()
+        self.controlFrameC.pack()
+        self.controlFrameD.pack()
+
+        self.controlNote.add(self.controlFrameA, text = "Controls")
+        self.controlNote.add(self.controlFrameB, text = "Model")
+        self.controlNote.add(self.controlFrameC, text = "Plot")
+        self.controlNote.add(self.controlFrameD, text = "Labels")
+
+        self.controlNote.pack(fill=tkinter.BOTH, expand=1)
+
+    def createNormalizationControls(self):
+        
         #=======================================================================
         self.bttn11 = tkinter.Button(self.controlFrameA,\
                                     text = "Back",\
                                     command = self.onBack)
-        self.bttn11.grid(row = 0, column = 0, sticky = WENS)
+        self.bttn11.grid(row = 0, column = 0, sticky = self.WENS)
 
         self.bttn21 = tkinter.Button(self.controlFrameA,\
                                     text = "Choose region",\
                                     command = self.onChooseActiveRegion)
-        self.bttn21.grid(row = 1, column = 0, sticky = WENS)
+        self.bttn21.grid(row = 1, column = 0, sticky = self.WENS)
 
         self.bttn31 = tkinter.Button(self.controlFrameA,\
                                      text = "Create region",\
                                      command = self.onCreateNewActiveRegion)
-        self.bttn31.grid(row = 2, column = 0, sticky = WENS)
+        self.bttn31.grid(row = 2, column = 0, sticky = self.WENS)
 
-        self.currentOrder = tkinter.StringVar()
-        self.bttn41 = tkinter.Spinbox(self.controlFrameA,\
-                                        from_=1,\
-                                        to=10,\
-                                        command=self.onUpdateOrder,\
-                                        textvariable=self.currentOrder,\
-                                        state = "readonly",\
-                                        )
-                                     # text = "Create new active region",\
-                                     # command = self.onCreateNewActiveRegion)
-        self.bttn41.grid(row = 3, column = 0, sticky = WENS)
         #-----------------------------------------------------------------------
         self.bttn12 = tkinter.Button(self.controlFrameA,\
                                      text = "Next spectrum",\
                                      command = self.onNextSpectrum)
-        self.bttn12.grid(row = 0, column = 1, sticky = WENS)
+        self.bttn12.grid(row = 0, column = 1, sticky = self.WENS)
 
         self.bttn22 = tkinter.Button(self.controlFrameA,\
                                     text = "Add special point",\
                                     command = self.onAddSpecialPoint)
-        self.bttn22.grid(row = 1, column = 1, sticky = WENS)
+        self.bttn22.grid(row = 1, column = 1, sticky = self.WENS)
 
         self.bttn32 = tkinter.Button(self.controlFrameA,\
                                     text = "Auto fit special points",\
                                     command = self.onAutoFitSpecialPoints)
-        self.bttn32.grid(row = 2, column = 1, sticky = WENS)
+        self.bttn32.grid(row = 2, column = 1, sticky = self.WENS)
 
-        self.bttn42 = tkinter.Label(self.controlFrameA, text=" <--- Adjust order")
-        self.bttn42.grid(row = 3, column = 1, sticky = WENS)
+        # self.bttn42 = tkinter.Label(self.controlFrameA, text=" <--- Adjust order")
+        # self.bttn42.grid(row = 3, column = 1, sticky = self.WENS)
         #-----------------------------------------------------------------------
         self.bttn13 = tkinter.Button(self.controlFrameA,\
                                      text = "Normalize",\
                                      command = self.onNormalize)
-        self.bttn13.grid(row = 0, column = 2, sticky = WENS)
+        self.bttn13.grid(row = 0, column = 2, sticky = self.WENS)
 
         self.bttn23 = tkinter.Button(self.controlFrameA,\
                                     text = "Auto update",\
                                     command = self.onSetAutoUpdateNormalization)
-        self.bttn23.grid(row = 1, column = 2, sticky = WENS)
+        self.bttn23.grid(row = 1, column = 2, sticky = self.WENS)
 
         self.bttn33 = tkinter.Button(self.controlFrameA,\
                                     text = "Radial velocity",\
                                     command = self.onRadialVelocity)
-        self.bttn33.grid(row = 2, column = 2, sticky = WENS)
+        self.bttn33.grid(row = 2, column = 2, sticky = self.WENS)
         #=======================================================================
+
+        self.currentOrder = tkinter.StringVar()
+        self.bttn14 = tkinter.Spinbox(self.controlFrameA,\
+                                        from_=1,\
+                                        to=10,\
+                                        width=2,\
+                                        command=self.onUpdateOrder,\
+                                        textvariable=self.currentOrder,\
+                                        state = "readonly",\
+                                        font = Font(size=12)
+                                        )
+                                     # text = "Create new active region",\
+                                     # command = self.onCreateNewActiveRegion)
+        self.bttn14.grid(row = 0, column = 3, rowspan = 3, sticky = self.WENS)
 
         self.backgroundColor = self.bttn11.cget("bg")
         self.activeBackground = self.bttn11.cget("activebackground")
 
-        #=======================================================================
+    def createModellingControls(self):
         self.teffVar = tkinter.DoubleVar(value = 22000)
         self.loggVar = tkinter.DoubleVar(value = 3.8)
         self.vmicVar = tkinter.DoubleVar(value = 2)
@@ -364,9 +390,9 @@ class NormSpectra(tkinter.Tk):
                                         to = 30000,
                                         resolution = 50,
                                         # sliderlength = 30,
-                                        #length = 200,
+                                        # length = 400,
                                         )
-        self.teffScale.grid(row = 0, column = 0, columnspan = 2, sticky = WENS)
+        self.teffScale.grid(row = 0, column = 0, columnspan = 2, sticky = self.WENS)
 
         self.loggScale = tkinter.Scale(self.controlFrameB,
                                         variable = self.loggVar,
@@ -374,8 +400,10 @@ class NormSpectra(tkinter.Tk):
                                         label = "logg",
                                         from_ = 3.0,
                                         to = 4.5,
-                                        resolution = 0.05)
-        self.loggScale.grid(row = 1, column = 0, sticky = WENS)
+                                        resolution = 0.05,
+                                        length = 250,
+                                        )
+        self.loggScale.grid(row = 1, column = 0, sticky = self.WENS)
 
         self.vmicScale = tkinter.Scale(self.controlFrameB,
                                         variable = self.vmicVar,
@@ -384,8 +412,9 @@ class NormSpectra(tkinter.Tk):
                                         from_ = 0,
                                         to = 15,
                                         resolution = 1,
+                                        length = 250,
                                         )
-        self.vmicScale.grid(row = 1, column = 1, sticky = WENS)
+        self.vmicScale.grid(row = 1, column = 1, sticky = self.WENS)
 
         self.vmacScale = tkinter.Scale(self.controlFrameB,
                                         variable = self.vmacVar,
@@ -394,9 +423,9 @@ class NormSpectra(tkinter.Tk):
                                         from_ = 0,
                                         to = 50,
                                         resolution = 1,
-                                        length = 150,
+                                        length = 250,
                                         )
-        self.vmacScale.grid(row = 0, column = 2, sticky = WENS)
+        self.vmacScale.grid(row = 0, column = 2, sticky = self.WENS)
 
 
         self.vsiniScale = tkinter.Scale(self.controlFrameB,
@@ -408,7 +437,7 @@ class NormSpectra(tkinter.Tk):
                                         resolution = 1,
                                         length = 150,
                                         )
-        self.vsiniScale.grid(row = 1, column = 2, sticky = WENS)
+        self.vsiniScale.grid(row = 1, column = 2, sticky = self.WENS)
 
         self.meScale = tkinter.Scale(self.controlFrameB,
                                     variable = self.meVar,
@@ -417,9 +446,9 @@ class NormSpectra(tkinter.Tk):
                                     from_ = -1, #TODO work around low metallicity bug
                                     to = 0.3,
                                     resolution = 0.1,
-                                    # length = 30,
+                                    length = 250,
                                     )
-        self.meScale.grid(row = 0, column = 3, columnspan = 2, sticky = WENS)
+        self.meScale.grid(row = 0, column = 3, columnspan = 2, sticky = self.WENS)
 
         # self.resolutionScale = tkinter.Scale(self.controlFrameB,
         #                                 variable = self.resolution,
@@ -437,7 +466,7 @@ class NormSpectra(tkinter.Tk):
         self.resolutionLabel = tkinter.Label(self.controlFrameB,
                                              text = "resolution",
                                              )
-        self.resolutionLabel.grid(row = 1, column = 3, sticky = WENS)
+        self.resolutionLabel.grid(row = 1, column = 3, sticky = self.WENS)
 
         self.resolutionScale = tkinter.Spinbox(self.controlFrameB,
                                 textvariable = self.resolution,
@@ -446,47 +475,51 @@ class NormSpectra(tkinter.Tk):
                                 width = 7,
                                 )
         self.resolution.set(np.inf) # Must be like that :(
-        self.resolutionScale.grid(row = 1, column = 4, sticky = WENS)
+        self.resolutionScale.grid(row = 1, column = 4, sticky = self.WENS)
 
         self.bttnClearTheorSpec = tkinter.Button(self.controlFrameB,\
                                     text = "Clear\ntheoretical\nspectrum",\
                                     command = self.onClearTheoreticalSpectrum)
-        self.bttnClearTheorSpec.grid(row = 0, column = 5, rowspan = 1, sticky = WENS)
+        self.bttnClearTheorSpec.grid(row = 0, column = 5, rowspan = 1, sticky = self.WENS)
 
         self.bttnLoadTheorSpec = tkinter.Button(self.controlFrameB,\
                                     text = "Compute\ntheoretical\nspectrum",\
                                     command = self.onComputeTheoreticalSpectrum)
-        self.bttnLoadTheorSpec.grid(row = 1, column = 5, rowspan = 1, sticky = WENS)
-
-        # self.ifSaveCorrectedvrad = tkinter.IntVar()
-        # self.chButtonCorrectedVRad = tkinter.Checkbutton(self.controlFrameC,
-        #                                                 text = "Save\ncorrected\nfor\nvrad?",
-        #                                                 variable = self.ifSaveCorrectedvrad,
-        #                                                 #height = 20,
-        #                                                 )
-        # self.chButtonCorrectedVRad.grid(row = 0, column = 0, sticky = WENS)
+        self.bttnLoadTheorSpec.grid(row = 1, column = 5, rowspan = 1, sticky = self.WENS)
 
         self.ifAlreadyNormed = tkinter.IntVar()
-        self.workWithNormedSpectrum = tkinter.Checkbutton(self.controlFrameC,
+        self.workWithNormedSpectrum = tkinter.Checkbutton(self.controlFrameB,
                                                         text = "Already\nnormalised\nspectrum?",
                                                         variable = self.ifAlreadyNormed,
                                                         command = self.onAlreadyNormed,
                                                         )
-        self.workWithNormedSpectrum.grid(row = 1, column = 0, sticky = WENS)
+        self.workWithNormedSpectrum.grid(row = 0, column = 6,rowspan=2, sticky = self.WENS)
 
+    def createOutputPlotControls(self):
         self.bttnOpenSaveWindow = tkinter.Button(self.controlFrameC,\
-                                    text = "Plot\nfitted\nspectrum",\
+                                    text = "Plot fitted spectrum",\
                                     command = self.onOpenSavePlot)
-        self.bttnOpenSaveWindow.grid(row = 2, column = 0, sticky = WENS)
+        self.bttnOpenSaveWindow.grid(row = 2, column = 0, sticky = self.WENS)
 
-        # self.variables = tkinter.Text(self.controlFrameC, width = 50, height = 5,\
-        #                               wrap = tkinter.WORD,state="disabled")
-        # self.variables.pack(side=tkinter.LEFT,fill=tkinter.BOTH, expand=1)
-
-        self.controlFrameA.grid(row = 0, column = 0, sticky = WENS)
-        self.controlFrameB.grid(row = 0, column = 1, sticky = WENS)
-        self.controlFrameC.grid(row = 0, column = 2, sticky = WENS)
-        self.controlFrame.pack()
+    def createLabelControls(self):
+        self._visibility_depth = tkinter.DoubleVar(value = 0.95)
+        self.appLogic.setLabelsThreshold(self._visibility_depth.get())
+        self.labelScale = tkinter.Scale(self.controlFrameD,
+                            variable = self._visibility_depth,
+                            orient = tkinter.HORIZONTAL,
+                            label = "Line depth",
+                            from_ = 0,
+                            to = 1,
+                            resolution = 0.01,
+                            command = self.onUpdateLabelDepth,
+                            length = 200,
+                            )
+        self.labelScale.pack(anchor="w")
+        
+    def onUpdateLabelDepth(self, value):
+        self.appLogic.setLabelsThreshold(self._visibility_depth.get())
+        self.updateLinesAnnotations()
+        self.canvas.draw()
 
     def onAlreadyNormed(self,reprint = True):
         if self.ifAlreadyNormed.get() == 1:
@@ -983,7 +1016,7 @@ class radialVelocityDialog(tkinter.Toplevel):
 
     def createControls(self):
         self.controlFrame = tkinter.Frame(self)
-        WENS = tkinter.W+tkinter.E+tkinter.N+tkinter.S
+        self.WENS = tkinter.W+tkinter.E+tkinter.N+tkinter.S
 
         tkinter.Label(self.controlFrame , text="Level 1").grid(column=0, row=0)
         tkinter.Label(self.controlFrame , text="Level 2").grid(column=0, row=1)
@@ -1018,7 +1051,7 @@ class radialVelocityDialog(tkinter.Toplevel):
         self.sp3.grid(column=1, row=2)
 
         reject = tkinter.Button(self.controlFrame , text="Reject", command=self.onReject)
-        reject.grid(column=0, row=3, columnspan = 2, sticky = WENS)
+        reject.grid(column=0, row=3, columnspan = 2, sticky = self.WENS)
 
         #-----------------------------------------------------------------------
 
@@ -1049,10 +1082,10 @@ class radialVelocityDialog(tkinter.Toplevel):
         self.text.grid(column=4, row=0)
         self.text.insert(tkinter.END,-self.appLogicClass.radialVelocity)
         radVel = tkinter.Button(self.controlFrame, text="Compute velocity", command=self.onComputeVelocity)
-        radVel.grid(column=4, row=1, sticky = WENS)
+        radVel.grid(column=4, row=1, sticky = self.WENS)
 
         applyChanges = tkinter.Button(self.controlFrame, text="Apply correction", command=self.onApplyChanges)
-        applyChanges.grid(column=4, row=2,rowspan=2, sticky = WENS)
+        applyChanges.grid(column=4, row=2,rowspan=2, sticky = self.WENS)
         #-----------------------------------------------------------------------
 
         self.controlFrame.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
