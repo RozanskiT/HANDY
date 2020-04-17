@@ -81,6 +81,8 @@ class NormSpectra(tkinter.Tk):
                               command=self.onSaveContinuum)
         fileMenu2.add_command(label="Save theoretical spectrum",\
                               command=self.onSaveTheoreticalSpectrum)
+        fileMenu2.add_command(label="Save notes",\
+                              command=self.onSaveNotes)                           
         fileMenu2.add_separator()
         fileMenu2.add_command(label="Save all",\
                         command=self.onSaveAll) 
@@ -199,6 +201,8 @@ class NormSpectra(tkinter.Tk):
             self.appLogic.normSpectrum()
         self.onAlreadyNormed(reprint = False)
 
+        self.updateNotesOnNewSpectrum()
+
         contRegionsWaveAndFlux = self.appLogic.getContinuumRangesForPlot()
         self.replotUpdatedRanges(contRegionsWaveAndFlux,ifAutoscale=True)
 
@@ -292,6 +296,7 @@ class NormSpectra(tkinter.Tk):
         self.onSaveVelocityCorrectedNormedSpectrum(verbose=False)
         self.onSaveContinuum(verbose=False)
         self.onSaveTheoreticalSpectrum(verbose=False)
+        self.onSaveNotes()
 
     def createControls(self):
         # Create several frames for grouping buttons
@@ -301,24 +306,28 @@ class NormSpectra(tkinter.Tk):
         self.controlFrameB=tkinter.Frame(self.controlNote)
         self.controlFrameC=tkinter.Frame(self.controlNote)
         self.controlFrameD=tkinter.Frame(self.controlNote)
+        self.controlFrameE=tkinter.Frame(self.controlNote)
         
 
         self.createNormalizationControls()
         self.createModellingControls()
         self.createOutputPlotControls()
         self.createLabelControls()
+        self.createSpectrumNotes()
 
         self.controlFrameA.pack()
         self.controlFrameB.pack()
         self.controlFrameC.pack()
         self.controlFrameD.pack()
+        self.controlFrameE.pack()
 
         self.controlNote.add(self.controlFrameA, text = "Controls")
         self.controlNote.add(self.controlFrameB, text = "Model")
         self.controlNote.add(self.controlFrameC, text = "Plot")
         self.controlNote.add(self.controlFrameD, text = "Labels")
+        self.controlNote.add(self.controlFrameE, text = "Notes")
 
-        self.controlNote.pack(fill=tkinter.BOTH, expand=1)
+        self.controlNote.pack(fill=tkinter.BOTH, expand=0)
 
     def createNormalizationControls(self):
         
@@ -533,7 +542,159 @@ class NormSpectra(tkinter.Tk):
                             length = 200,
                             )
         self.labelScale.pack(anchor="w")
-        
+
+    def createSpectrumNotes(self):
+
+        topframe = tkinter.Frame(self.controlFrameE)
+        topframe.pack(side=tkinter.TOP)   
+
+        self.spectrumBasenameVar = tkinter.StringVar()
+        tkinter.Label(topframe, textvariable=self.spectrumBasenameVar).pack(side=tkinter.LEFT)
+        self.spectrumBasenameVar.set("Spectrum name: " + self.appLogic.getSpectrumBaseName())
+        note_data = self.appLogic.getNoteData()
+
+        bottomframe = tkinter.Frame(self.controlFrameE)
+        bottomframe.pack(side=tkinter.BOTTOM, expand=0)  
+
+        leftbottomframe = tkinter.Frame(bottomframe)
+        leftbottomframe.pack(side=tkinter.LEFT, expand=0)
+
+        rightbottomframe = tkinter.Frame(bottomframe)
+        rightbottomframe.pack(side=tkinter.LEFT, expand=0) 
+        #-------------------------------------- TEFF
+        self.noteTeff = tkinter.StringVar()
+        self.noteTeffLabel = tkinter.Label(leftbottomframe,
+                                        text = "teff",
+                                        )
+        self.noteTeffEntry = tkinter.Entry(leftbottomframe,
+                                            textvariable = self.noteTeff,
+                                            )
+        self.noteTeff.set(note_data['teff'])
+        self.noteTeffLabel.grid(row = 1, column = 1, sticky = self.WENS)
+        self.noteTeffEntry.grid(row = 1, column = 2, sticky = self.WENS)
+        #-------------------------------------- LOGG
+        self.noteLogg = tkinter.StringVar()
+        self.noteLoggLabel = tkinter.Label(leftbottomframe,
+                                        text = "logg",
+                                        )
+        self.noteLoggEntry = tkinter.Entry(leftbottomframe,
+                                            textvariable = self.noteLogg,
+                                            )
+        self.noteLogg.set(note_data['logg'])
+        self.noteLoggLabel.grid(row = 2, column = 1, sticky = self.WENS)
+        self.noteLoggEntry.grid(row = 2, column = 2, sticky = self.WENS)
+        #-------------------------------------- ME
+        self.noteMe = tkinter.StringVar()
+        self.noteMeLabel = tkinter.Label(leftbottomframe,
+                                        text = "me",
+                                        )
+        self.noteMeEntry = tkinter.Entry(leftbottomframe,
+                                            textvariable = self.noteMe,
+                                            )
+        self.noteMe.set(note_data['me'])
+        self.noteMeLabel.grid(row = 3, column = 1, sticky = self.WENS)
+        self.noteMeEntry.grid(row = 3, column = 2, sticky = self.WENS)
+        #========================================
+        #-------------------------------------- VMIC
+        self.noteVmic = tkinter.StringVar()
+        self.noteVmicLabel = tkinter.Label(leftbottomframe,
+                                        text = "vmic",
+                                        )
+        self.noteVmicEntry = tkinter.Entry(leftbottomframe,
+                                            textvariable = self.noteVmic,
+                                            )
+        self.noteVmic.set(note_data['vmic'])
+        self.noteVmicLabel.grid(row = 1, column = 3, sticky = self.WENS)
+        self.noteVmicEntry.grid(row = 1, column = 4, sticky = self.WENS)
+        #-------------------------------------- VSINI
+        self.noteVsini = tkinter.StringVar()
+        self.noteVsiniLabel = tkinter.Label(leftbottomframe,
+                                        text = "vsini",
+                                        )
+        self.noteVsiniEntry = tkinter.Entry(leftbottomframe,
+                                            textvariable = self.noteVsini,
+                                            )
+        self.noteVsini.set(note_data['vsini'])
+        self.noteVsiniLabel.grid(row = 2, column = 3, sticky = self.WENS)
+        self.noteVsiniEntry.grid(row = 2, column = 4, sticky = self.WENS)
+        #-------------------------------------- VMAC
+        self.noteVmac = tkinter.StringVar()
+        self.noteVmacLabel = tkinter.Label(leftbottomframe,
+                                        text = "vmac",
+                                        )
+        self.noteVmacEntry = tkinter.Entry(leftbottomframe,
+                                            textvariable = self.noteVmac,
+                                            )
+        self.noteVmac.set(note_data['vmac'])
+        self.noteVmacLabel.grid(row = 3, column = 3, sticky = self.WENS)
+        self.noteVmacEntry.grid(row = 3, column = 4, sticky = self.WENS)
+
+        #======================================= Notes
+        self.noteText = tkinter.StringVar()
+        self.noteTextDisplay = tkinter.Text(rightbottomframe,height=5)
+        self.noteText.set(note_data['text_notes'])
+        self.noteTextDisplay.insert(tkinter.INSERT, self.noteText.get())        
+        self.noteTextDisplay.pack(side=tkinter.LEFT, expand=True, fill=tkinter.Y)
+
+        #======================================= SAVE NOTES BUTTON
+        self.noteSaveBttn = tkinter.Button(rightbottomframe,\
+                            text = "Save notes",\
+                            command = self.onSaveNotes)
+        self.noteSaveBttn.pack(side=tkinter.LEFT, expand=True, fill=tkinter.Y)
+
+        self.noteGetParamsBttn = tkinter.Button(rightbottomframe,\
+                            text = "Get paramters\nfrom model",\
+                            command = self.onGetParamsFromModel)
+        self.noteGetParamsBttn.pack(side=tkinter.LEFT, expand=True, fill=tkinter.Y)
+
+        self.noteSetParamsBttn = tkinter.Button(rightbottomframe,\
+                            text = "Set model\nfrom notes",\
+                            command = self.onSetModelFromNotes)
+        self.noteSetParamsBttn.pack(side=tkinter.LEFT, expand=True, fill=tkinter.Y)
+
+    def onSaveNotes(self):
+        note_data = {
+            "text_notes": self.noteTextDisplay.get("1.0",tkinter.END),
+            "teff": self.noteTeff.get(),
+            "logg": self.noteLogg.get(),
+            "me": self.noteMe.get(),
+            "vmic": self.noteVmic.get(),
+            "vsini": self.noteVsini.get(),
+            "vmac": self.noteVmac.get(),
+        }
+        self.appLogic.setNoteData(note_data)
+    
+    def updateNotesOnNewSpectrum(self):
+        self.spectrumBasenameVar.set("Spectrum name: " + self.appLogic.getSpectrumBaseName())
+        note_data = self.appLogic.getNoteData()
+
+        self.noteTeff.set(note_data['teff'])
+        self.noteLogg.set(note_data['logg'])
+        self.noteMe.set(note_data['me'])
+        self.noteVmic.set(note_data['vmic'])
+        self.noteVsini.set(note_data['vsini'])
+        self.noteVmac.set(note_data['vmac'])
+        self.noteText.set(note_data['text_notes'])
+
+        self.noteTextDisplay.delete("1.0", tkinter.END)
+        self.noteTextDisplay.insert(tkinter.INSERT, self.noteText.get())
+
+    def onGetParamsFromModel(self):
+        self.noteTeff.set(self.teffVar.get())
+        self.noteLogg.set(self.loggVar.get())
+        self.noteMe.set(self.meVar.get())
+        self.noteVmic.set(self.vmicVar.get())
+        self.noteVsini.set(self.vsiniVar.get())
+        self.noteVmac.set(self.vmacVar.get())
+
+    def onSetModelFromNotes(self):
+        self.teffVar.set(self.noteTeff.get())
+        self.loggVar.set(self.noteLogg.get())
+        self.meVar.set(self.noteMe.get())
+        self.vmicVar.set(self.noteVmic.get())
+        self.vsiniVar.set(self.noteVsini.get())
+        self.vmacVar.set(self.noteVmac.get())  
+
     def onUpdateLabelDepth(self, value):
         self.appLogic.setLabelsThreshold(self._visibility_depth.get())
         self.updateLinesAnnotations()

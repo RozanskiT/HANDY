@@ -13,6 +13,7 @@ import regionLogic
 import radialVelocity
 import specInterface
 import gridDefinitionsRead
+import spectrumNote
 
 from vidmapy.kurucz.atlas import Atlas
 from vidmapy.kurucz.synthe import Synthe
@@ -34,6 +35,7 @@ class normAppLogic:
         self.radialVelocityEstimator = radialVelocity.RadialVelocity()
         self.specSynthesizer = specInterface.SynthesizeSpectrum()
         self.gridDefinitions = gridDefinitionsRead.gridDefinition(gridDefinitionsFile)
+        self.spectrumNote = spectrumNote.spectrumNote()
 
         self.spectrum = sp.Spectrum()
         self.theoreticalSpectrum = sp.Spectrum(wave=[],\
@@ -73,6 +75,7 @@ class normAppLogic:
         self.radialVelocity = 0.0
         self.oryginalWavelength = copy.deepcopy(self.spectrum.wave)
 
+        self.spectrumNote.set_spectrum(fileName)
 
     def saveSpectrum(self,fileName):
         sp.saveSpectrum(fileName,self.spectrum)
@@ -312,6 +315,20 @@ class normAppLogic:
     def analysisOutput(self, waveMin, waveMax):
         # TODO: Code routine that Ewa needs
         pass
+
+    def getSpectrumBaseName(self):
+        spectrumBaseName = ""
+        if self.spectrum.name is not None:
+            spectrumBaseName = os.path.basename(self.spectrumNote.spectrum_path)
+        return spectrumBaseName
+
+    def getNoteData(self):
+        noteDataDict = self.spectrumNote.get_note_data()
+        return noteDataDict
+
+    def setNoteData(self, noteDataDict):
+        self.spectrumNote.set_from_dict(noteDataDict)
+
 
 ################################################################################
 ### TESTS
