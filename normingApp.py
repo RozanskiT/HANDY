@@ -81,6 +81,9 @@ class NormSpectra(tkinter.Tk):
                               command=self.onSaveContinuum)
         fileMenu2.add_command(label="Save theoretical spectrum",\
                               command=self.onSaveTheoreticalSpectrum)
+        fileMenu2.add_separator()
+        fileMenu2.add_command(label="Save all",\
+                        command=self.onSaveAll) 
         #------------------------------------
         fileMenu3 = tkinter.Menu(menu)
         menu.add_cascade(label="Spectrum", underline=0, menu=fileMenu3)
@@ -240,40 +243,55 @@ class NormSpectra(tkinter.Tk):
     def onExit(self):
         self.quit()
 
-    def onSaveNormedSpectrum(self):
+    def onSaveNormedSpectrum(self, verbose=True):
         initialName = "out.norm"
         if self.appLogic.spectrum.name is not None:
-            initialName = self.appLogic.spectrum.name.split('.')[-2]+".norm"
-        fileName = filedialog.asksaveasfilename(initialfile=initialName)
-        if fileName and self.appLogic.spectrum.wave is not None:
+            fileName = os.path.splitext(self.appLogic.spectrum.name)[0] + ".norm"
+        if verbose:
+            initialName = os.path.basename(fileName)
+            fileName = filedialog.asksaveasfilename(initialfile=initialName)
+        if fileName and self.appLogic.spectrum.wave is not None and len(self.appLogic.spectrum.wave) != 0:
             # self.appLogic.saveNormedSpectrum(fileName,self.ifSaveCorrectedvrad.get())
             self.appLogic.saveNormedSpectrum(fileName,False)
 
-    def onSaveVelocityCorrectedNormedSpectrum(self):
-        initialName = "out.norm"
+    def onSaveVelocityCorrectedNormedSpectrum(self, verbose=True):
+        initialName = "out_rv.norm"
         if self.appLogic.spectrum.name is not None:
-            initialName = self.appLogic.spectrum.name.split('.')[-2]+"_rv.norm"
-        fileName = filedialog.asksaveasfilename(initialfile=initialName)
-        if fileName and self.appLogic.spectrum.wave is not None:
+            fileName = os.path.splitext(self.appLogic.spectrum.name)[0] + "_rv.norm"
+        if verbose:
+            initialName = os.path.basename(fileName)
+            fileName = filedialog.asksaveasfilename(initialfile=initialName)
+        if fileName and self.appLogic.spectrum.wave is not None and len(self.appLogic.spectrum.wave) != 0:
             self.appLogic.saveNormedSpectrum(fileName,True)
             # self.appLogic.saveSpectrum(fileName)
 
-    def onSaveContinuum(self):
+    def onSaveContinuum(self, verbose=True):
         initialName = "out.cont"
         if self.appLogic.spectrum.name is not None:
-            initialName = self.appLogic.spectrum.name.split('.')[-2]+".cont"
-        fileName = filedialog.asksaveasfilename(initialfile=initialName)
-        if fileName and self.appLogic.spectrum.wave is not None:
+            fileName = os.path.splitext(self.appLogic.spectrum.name)[0] + ".cont"
+        if verbose:
+            initialName = os.path.basename(fileName)
+            fileName = filedialog.asksaveasfilename(initialfile=initialName)
+        if fileName and self.appLogic.spectrum.wave is not None and len(self.appLogic.spectrum.wave) != 0:
             self.appLogic.continuumRegionsLogic.saveRegionsFile(self.appLogic.spectrum,\
                                                                 fileName)
 
-    def onSaveTheoreticalSpectrum(self):
+    def onSaveTheoreticalSpectrum(self, verbose=True):
         initialName = "out.syn"
         if self.appLogic.spectrum.name is not None:
-            initialName = self.appLogic.spectrum.name.split('.')[-2]+".syn"
-        fileName = filedialog.asksaveasfilename(initialfile=initialName)
-        if fileName and self.appLogic.theoreticalSpectrum.wave is not None:
+            fileName = os.path.splitext(self.appLogic.spectrum.name)[0] + ".syn"
+        if verbose:
+            initialName = os.path.basename(fileName)
+            fileName = filedialog.asksaveasfilename(initialfile=initialName)
+        print(fileName)
+        if fileName and self.appLogic.theoreticalSpectrum.wave is not None and len(self.appLogic.theoreticalSpectrum.wave) != 0:
             self.appLogic.saveTheoreticalSpectrum(fileName)
+
+    def onSaveAll(self):
+        self.onSaveNormedSpectrum(verbose=False)
+        self.onSaveVelocityCorrectedNormedSpectrum(verbose=False)
+        self.onSaveContinuum(verbose=False)
+        self.onSaveTheoreticalSpectrum(verbose=False)
 
     def createControls(self):
         # Create several frames for grouping buttons
@@ -587,20 +605,20 @@ class NormSpectra(tkinter.Tk):
         self.bttn31.configure(bg = self.backgroundColor,activebackground=self.activeBackground)
         self.bttn22.configure(bg = self.backgroundColor,activebackground=self.activeBackground)
         if self.ifAddPoint:
-            self.span.set_visible(False)
+            self.spanNormalization.set_visible(False)
         if self.ifChooseActiveRegion:
-            self.span.set_visible(False)
+            self.spanNormalization.set_visible(False)
         if boolKeyVar:
             button.configure(bg = "#567",activebackground="#678")
         else:
-            self.span.set_visible(True)
+            self.spanNormalization.set_visible(True)
             button.configure(bg = self.backgroundColor,activebackground=self.activeBackground)
 
     def resetButtons(self):
         self.bttn21.configure(bg = self.backgroundColor,activebackground=self.activeBackground)
         self.bttn31.configure(bg = self.backgroundColor,activebackground=self.activeBackground)
         self.bttn22.configure(bg = self.backgroundColor,activebackground=self.activeBackground)
-        self.span.set_visible(True)
+        self.spanNormalization.set_visible(True)
 
     def onNextSpectrum(self):
         pass
@@ -798,11 +816,17 @@ class NormSpectra(tkinter.Tk):
         self.plotFrame.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
 
         #span selector
-        self.span = SpanSelector(self.ax1, self.onUsingSpanSelector,\
+        self.spanNormalization = SpanSelector(self.ax1, self.onUsingSpanSelector,\
                                  'horizontal', useblit=True,\
                                  rectprops=dict(alpha=0.5, facecolor='red'),\
                                  button=1)
-        #self.span.set_visible(False)
+
+        self.spanLinesOutput = SpanSelector(self.ax2, self.onAnalysisOutput,\
+                                 'horizontal', useblit=True,\
+                                 rectprops=dict(alpha=0.5, facecolor='blue'),\
+                                 button=1)
+
+        #self.spanNormalization.set_visible(False)
 
     def onKeyPress(self,event):
         if event.key == 'n':
@@ -872,8 +896,6 @@ class NormSpectra(tkinter.Tk):
                 self.ifChooseActiveRegion=False
                 self.resetButtons()
 
-
-
     def onUsingSpanSelector(self,xmin, xmax):
         if self.appLogic.spectrum.wave is not None:
             if sum((self.appLogic.spectrum.wave > xmin) & (self.appLogic.spectrum.wave < xmax)) == 0:
@@ -894,6 +916,10 @@ class NormSpectra(tkinter.Tk):
         else:
             print("WARNING: NormSpectra.onUsingSpanSelector\nLoad spectrum first")
         #self.appLogic.continuumRegionsLogic.printRegions()
+
+    def onAnalysisOutput(self, xmin, xmax):
+        self.appLogic.analysisOutput(xmin, xmax)
+        print(xmin, xmax)
 
     def replotUpdatedRanges(self,contRegionsWaveAndFlux,ifAutoscale=False):
         colorGen = self.colorGenerator()

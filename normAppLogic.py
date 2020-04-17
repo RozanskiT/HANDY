@@ -309,6 +309,10 @@ class normAppLogic:
     def updateOrderOfActiveRegion(self,order):
         self.continuumRegionsLogic.setOrderOfActiveRegion(order)
 
+    def analysisOutput(self, waveMin, waveMax):
+        # TODO: Code routine that Ewa needs
+        pass
+
 ################################################################################
 ### TESTS
 ################################################################################
