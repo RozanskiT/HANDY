@@ -3,6 +3,8 @@
 import os
 
 import tkinter
+from tkinter import ttk
+from tkinter.font import Font
 import tkinter.filedialog as filedialog
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg as FigCanvas
 from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk as NavigationToolbar
@@ -11,6 +13,7 @@ from matplotlib.backend_bases import key_press_handler
 from matplotlib.widgets import SpanSelector
 from matplotlib.figure import Figure
 from matplotlib.ticker import ScalarFormatter, MaxNLocator
+from matplotlib.collections import LineCollection
 import matplotlib.pyplot as plt
 import numpy as np
 import glob
@@ -42,17 +45,17 @@ class NormSpectra(tkinter.Tk):
         self.createMainWindow()
 
     def createMainWindow(self):
+        self.WENS = tkinter.W+tkinter.E+tkinter.N+tkinter.S
         self.createWindow()
         self.createControls()
         self.createMenu()
         self.createPlottingArea()
-
+        
     def createWindow(self):
         self.frame = tkinter.Frame(self)
         self.frame.pack(fill=tkinter.BOTH, expand=1)
         self.wm_title("HANDY - Handy tool for spectra normalization")
 
-        # img = tkinter.PhotoImage(file=os.path.join(os.path.dirname(os.path.realpath(__file__)),"handyColor.gif"))
         img = tkinter.PhotoImage(file=os.path.join(os.path.dirname(os.path.realpath(__file__)),"handy.gif"))
         self.tk.call('wm', 'iconphoto', self._w, img)
 
@@ -80,9 +83,14 @@ class NormSpectra(tkinter.Tk):
                               command=self.onSaveContinuum)
         fileMenu2.add_command(label="Save theoretical spectrum",\
                               command=self.onSaveTheoreticalSpectrum)
+        fileMenu2.add_command(label="Save notes",\
+                              command=self.onSaveNotes)                           
+        fileMenu2.add_separator()
+        fileMenu2.add_command(label="Save all",\
+                        command=self.onSaveAll) 
         #------------------------------------
         fileMenu3 = tkinter.Menu(menu)
-        menu.add_cascade(label="Grids", underline=0, menu=fileMenu3)
+        menu.add_cascade(label="Spectrum", underline=0, menu=fileMenu3)
         self.vlevel = tkinter.IntVar()
         lG = self.appLogic.gridDefinitions.listAvailibleGrids()
         self.appLogic.gridDefinitions.setChoosenGrid(lG[0])
@@ -94,6 +102,24 @@ class NormSpectra(tkinter.Tk):
                                       command = self.onChooseGrid
                                       )
         # self.vlevel.set(0)
+        fileMenu3.add_separator()
+        self._syntheNumber = len(lG)
+        fileMenu3.add_radiobutton(label = "SYNTHE",
+                            var = self.vlevel,
+                            value = len(lG),
+                            command = self.onChooseSYNTHE
+                            )
+        #------------------------------------
+        fileMenu4 = tkinter.Menu(menu)
+        menu.add_cascade(label="Line labels", underline=0, menu=fileMenu4)
+
+        self.labelSettings = tkinter.IntVar()
+        self.labelSettings.set(0)
+
+        fileMenu4.add_radiobutton(label="No labels", value=0, variable=self.labelSettings, command = self.onCheckLabelSettings)
+        fileMenu4.add_separator()
+        fileMenu4.add_radiobutton(label="Show all", value=1, variable=self.labelSettings, command = self.onCheckLabelSettings)
+        fileMenu4.add_radiobutton(label="On hower", value=2, variable=self.labelSettings, command = self.onCheckLabelSettings)
 
     def onChooseGrid(self):
         lG = self.appLogic.gridDefinitions.listAvailibleGrids()
@@ -116,6 +142,8 @@ class NormSpectra(tkinter.Tk):
         )
         d = self.appLogic.gridDefinitions.getDefinedVariables()
         setVal = {True: 'normal', False: 'disabled'}
+        self.vmacScale['state'] = setVal[True]
+        self.vsiniScale['state'] = setVal[True]
         self.teffScale['state'] = setVal[d["teff"]]
         self.loggScale['state'] = setVal[d["logg"]]
         self.vmicScale['state'] = setVal[d["vmic"]]
@@ -134,6 +162,25 @@ class NormSpectra(tkinter.Tk):
                 minim = np.round(np.log10(minim),2)
             maxim = np.round(np.log10(maxim),2)
             self.meScale['from_'] ,self.meScale['to'] = minim, maxim
+
+    def onChooseSYNTHE(self):
+        setVal = {True: 'normal', False: 'disabled'}
+        self.vmacScale['state'] = setVal[False]
+        self.vsiniScale['state'] = setVal[True]
+        self.teffScale['state'] = setVal[True]
+        self.loggScale['state'] = setVal[True]
+        self.vmicScale['state'] = setVal[True]
+        self.meScale['state'] = setVal[True]
+
+        self.teffScale['from_'], self.teffScale['to'] = 4000, 35000
+        self.loggScale['from_'], self.loggScale['to'] = 2.0, 6.0
+        self.vmicScale['from_'], self.vmicScale['to'] = 0.0, 15.0
+        self.meScale['from_'], self.meScale['to'] = -3.0, 0.6
+
+    def onCheckLabelSettings(self):
+        self.updateLinesAnnotations()
+        self.canvas.draw()
+
 
     def onOpenSpectrum(self):
         dirname = os.getcwd()
@@ -156,6 +203,8 @@ class NormSpectra(tkinter.Tk):
         if self.ifAutoUpdateNormalization:
             self.appLogic.normSpectrum()
         self.onAlreadyNormed(reprint = False)
+
+        self.updateNotesOnNewSpectrum()
 
         contRegionsWaveAndFlux = self.appLogic.getContinuumRangesForPlot()
         self.replotUpdatedRanges(contRegionsWaveAndFlux,ifAutoscale=True)
@@ -201,115 +250,159 @@ class NormSpectra(tkinter.Tk):
     def onExit(self):
         self.quit()
 
-    def onSaveNormedSpectrum(self):
+    def onSaveNormedSpectrum(self, verbose=True):
         initialName = "out.norm"
         if self.appLogic.spectrum.name is not None:
-            initialName = self.appLogic.spectrum.name.split('.')[-2]+".norm"
-        fileName = filedialog.asksaveasfilename(initialfile=initialName)
-        if fileName and self.appLogic.spectrum.wave is not None:
+            fileName = os.path.splitext(self.appLogic.spectrum.name)[0] + ".norm"
+        if verbose:
+            initialName = os.path.basename(fileName)
+            fileName = filedialog.asksaveasfilename(initialfile=initialName)
+        if fileName and self.appLogic.spectrum.wave is not None and len(self.appLogic.spectrum.wave) != 0:
             # self.appLogic.saveNormedSpectrum(fileName,self.ifSaveCorrectedvrad.get())
             self.appLogic.saveNormedSpectrum(fileName,False)
 
-    def onSaveVelocityCorrectedNormedSpectrum(self):
-        initialName = "out.norm"
+    def onSaveVelocityCorrectedNormedSpectrum(self, verbose=True):
+        initialName = "out_rv.norm"
         if self.appLogic.spectrum.name is not None:
-            initialName = self.appLogic.spectrum.name.split('.')[-2]+"_rv.norm"
-        fileName = filedialog.asksaveasfilename(initialfile=initialName)
-        if fileName and self.appLogic.spectrum.wave is not None:
+            fileName = os.path.splitext(self.appLogic.spectrum.name)[0] + "_rv.norm"
+        if verbose:
+            initialName = os.path.basename(fileName)
+            fileName = filedialog.asksaveasfilename(initialfile=initialName)
+        if fileName and self.appLogic.spectrum.wave is not None and len(self.appLogic.spectrum.wave) != 0:
             self.appLogic.saveNormedSpectrum(fileName,True)
             # self.appLogic.saveSpectrum(fileName)
 
-    def onSaveContinuum(self):
+    def onSaveContinuum(self, verbose=True):
         initialName = "out.cont"
         if self.appLogic.spectrum.name is not None:
-            initialName = self.appLogic.spectrum.name.split('.')[-2]+".cont"
-        fileName = filedialog.asksaveasfilename(initialfile=initialName)
-        if fileName and self.appLogic.spectrum.wave is not None:
+            fileName = os.path.splitext(self.appLogic.spectrum.name)[0] + ".cont"
+        if verbose:
+            initialName = os.path.basename(fileName)
+            fileName = filedialog.asksaveasfilename(initialfile=initialName)
+        if fileName and self.appLogic.spectrum.wave is not None and len(self.appLogic.spectrum.wave) != 0:
             self.appLogic.continuumRegionsLogic.saveRegionsFile(self.appLogic.spectrum,\
                                                                 fileName)
 
-    def onSaveTheoreticalSpectrum(self):
+    def onSaveTheoreticalSpectrum(self, verbose=True):
         initialName = "out.syn"
         if self.appLogic.spectrum.name is not None:
-            initialName = self.appLogic.spectrum.name.split('.')[-2]+".syn"
-        fileName = filedialog.asksaveasfilename(initialfile=initialName)
-        if fileName and self.appLogic.theoreticalSpectrum.wave is not None:
+            fileName = os.path.splitext(self.appLogic.spectrum.name)[0] + ".syn"
+        if verbose:
+            initialName = os.path.basename(fileName)
+            fileName = filedialog.asksaveasfilename(initialfile=initialName)
+        print(fileName)
+        if fileName and self.appLogic.theoreticalSpectrum.wave is not None and len(self.appLogic.theoreticalSpectrum.wave) != 0:
             self.appLogic.saveTheoreticalSpectrum(fileName)
+
+    def onSaveAll(self):
+        self.onSaveNormedSpectrum(verbose=False)
+        self.onSaveVelocityCorrectedNormedSpectrum(verbose=False)
+        self.onSaveContinuum(verbose=False)
+        self.onSaveTheoreticalSpectrum(verbose=False)
+        self.onSaveNotes()
 
     def createControls(self):
         # Create several frames for grouping buttons
-        self.controlFrame = tkinter.Frame(self.frame)
-        self.controlFrameA=tkinter.Frame(self.controlFrame)
-        self.controlFrameB=tkinter.Frame(self.controlFrame)
-        self.controlFrameC=tkinter.Frame(self.controlFrame)
+        self.controlNote = ttk.Notebook(self.frame)
 
-        WENS = tkinter.W+tkinter.E+tkinter.N+tkinter.S
+        self.controlFrameA=tkinter.Frame(self.controlNote)
+        self.controlFrameB=tkinter.Frame(self.controlNote)
+        self.controlFrameC=tkinter.Frame(self.controlNote)
+        self.controlFrameD=tkinter.Frame(self.controlNote)
+        self.controlFrameE=tkinter.Frame(self.controlNote)
+        
+
+        self.createNormalizationControls()
+        self.createModellingControls()
+        self.createOutputPlotControls()
+        self.createLabelControls()
+        self.createSpectrumNotes()
+
+        self.controlFrameA.pack()
+        self.controlFrameB.pack()
+        self.controlFrameC.pack()
+        self.controlFrameD.pack()
+        self.controlFrameE.pack()
+
+        self.controlNote.add(self.controlFrameA, text = "Controls")
+        self.controlNote.add(self.controlFrameB, text = "Model")
+        self.controlNote.add(self.controlFrameC, text = "Plot")
+        self.controlNote.add(self.controlFrameD, text = "Labels")
+        self.controlNote.add(self.controlFrameE, text = "Notes")
+
+        self.controlNote.pack(fill=tkinter.BOTH, expand=0)
+
+    def createNormalizationControls(self):
+        
         #=======================================================================
         self.bttn11 = tkinter.Button(self.controlFrameA,\
                                     text = "Back",\
                                     command = self.onBack)
-        self.bttn11.grid(row = 0, column = 0, sticky = WENS)
+        self.bttn11.grid(row = 0, column = 0, sticky = self.WENS)
 
         self.bttn21 = tkinter.Button(self.controlFrameA,\
                                     text = "Choose region",\
                                     command = self.onChooseActiveRegion)
-        self.bttn21.grid(row = 1, column = 0, sticky = WENS)
+        self.bttn21.grid(row = 1, column = 0, sticky = self.WENS)
 
         self.bttn31 = tkinter.Button(self.controlFrameA,\
                                      text = "Create region",\
                                      command = self.onCreateNewActiveRegion)
-        self.bttn31.grid(row = 2, column = 0, sticky = WENS)
+        self.bttn31.grid(row = 2, column = 0, sticky = self.WENS)
 
-        self.currentOrder = tkinter.StringVar()
-        self.bttn41 = tkinter.Spinbox(self.controlFrameA,\
-                                        from_=1,\
-                                        to=10,\
-                                        command=self.onUpdateOrder,\
-                                        textvariable=self.currentOrder,\
-                                        state = "readonly",\
-                                        )
-                                     # text = "Create new active region",\
-                                     # command = self.onCreateNewActiveRegion)
-        self.bttn41.grid(row = 3, column = 0, sticky = WENS)
         #-----------------------------------------------------------------------
         self.bttn12 = tkinter.Button(self.controlFrameA,\
                                      text = "Next spectrum",\
                                      command = self.onNextSpectrum)
-        self.bttn12.grid(row = 0, column = 1, sticky = WENS)
+        self.bttn12.grid(row = 0, column = 1, sticky = self.WENS)
 
         self.bttn22 = tkinter.Button(self.controlFrameA,\
                                     text = "Add special point",\
                                     command = self.onAddSpecialPoint)
-        self.bttn22.grid(row = 1, column = 1, sticky = WENS)
+        self.bttn22.grid(row = 1, column = 1, sticky = self.WENS)
 
         self.bttn32 = tkinter.Button(self.controlFrameA,\
                                     text = "Auto fit special points",\
                                     command = self.onAutoFitSpecialPoints)
-        self.bttn32.grid(row = 2, column = 1, sticky = WENS)
+        self.bttn32.grid(row = 2, column = 1, sticky = self.WENS)
 
-        self.bttn42 = tkinter.Label(self.controlFrameA, text=" <--- Adjust order")
-        self.bttn42.grid(row = 3, column = 1, sticky = WENS)
+        # self.bttn42 = tkinter.Label(self.controlFrameA, text=" <--- Adjust order")
+        # self.bttn42.grid(row = 3, column = 1, sticky = self.WENS)
         #-----------------------------------------------------------------------
         self.bttn13 = tkinter.Button(self.controlFrameA,\
                                      text = "Normalize",\
                                      command = self.onNormalize)
-        self.bttn13.grid(row = 0, column = 2, sticky = WENS)
+        self.bttn13.grid(row = 0, column = 2, sticky = self.WENS)
 
         self.bttn23 = tkinter.Button(self.controlFrameA,\
                                     text = "Auto update",\
                                     command = self.onSetAutoUpdateNormalization)
-        self.bttn23.grid(row = 1, column = 2, sticky = WENS)
+        self.bttn23.grid(row = 1, column = 2, sticky = self.WENS)
 
         self.bttn33 = tkinter.Button(self.controlFrameA,\
                                     text = "Radial velocity",\
                                     command = self.onRadialVelocity)
-        self.bttn33.grid(row = 2, column = 2, sticky = WENS)
+        self.bttn33.grid(row = 2, column = 2, sticky = self.WENS)
         #=======================================================================
+
+        self.currentOrder = tkinter.StringVar()
+        self.bttn14 = tkinter.Spinbox(self.controlFrameA,\
+                                        from_=1,\
+                                        to=10,\
+                                        width=2,\
+                                        command=self.onUpdateOrder,\
+                                        textvariable=self.currentOrder,\
+                                        state = "readonly",\
+                                        font = Font(size=12)
+                                        )
+                                     # text = "Create new active region",\
+                                     # command = self.onCreateNewActiveRegion)
+        self.bttn14.grid(row = 0, column = 3, rowspan = 3, sticky = self.WENS)
 
         self.backgroundColor = self.bttn11.cget("bg")
         self.activeBackground = self.bttn11.cget("activebackground")
 
-        #=======================================================================
+    def createModellingControls(self):
         self.teffVar = tkinter.DoubleVar(value = 22000)
         self.loggVar = tkinter.DoubleVar(value = 3.8)
         self.vmicVar = tkinter.DoubleVar(value = 2)
@@ -327,9 +420,9 @@ class NormSpectra(tkinter.Tk):
                                         to = 30000,
                                         resolution = 50,
                                         # sliderlength = 30,
-                                        #length = 200,
+                                        # length = 400,
                                         )
-        self.teffScale.grid(row = 0, column = 0, columnspan = 2, sticky = WENS)
+        self.teffScale.grid(row = 0, column = 0, columnspan = 2, sticky = self.WENS)
 
         self.loggScale = tkinter.Scale(self.controlFrameB,
                                         variable = self.loggVar,
@@ -337,8 +430,10 @@ class NormSpectra(tkinter.Tk):
                                         label = "logg",
                                         from_ = 3.0,
                                         to = 4.5,
-                                        resolution = 0.05)
-        self.loggScale.grid(row = 1, column = 0, sticky = WENS)
+                                        resolution = 0.05,
+                                        length = 250,
+                                        )
+        self.loggScale.grid(row = 1, column = 0, sticky = self.WENS)
 
         self.vmicScale = tkinter.Scale(self.controlFrameB,
                                         variable = self.vmicVar,
@@ -347,8 +442,9 @@ class NormSpectra(tkinter.Tk):
                                         from_ = 0,
                                         to = 15,
                                         resolution = 1,
+                                        length = 250,
                                         )
-        self.vmicScale.grid(row = 1, column = 1, sticky = WENS)
+        self.vmicScale.grid(row = 1, column = 1, sticky = self.WENS)
 
         self.vmacScale = tkinter.Scale(self.controlFrameB,
                                         variable = self.vmacVar,
@@ -357,9 +453,9 @@ class NormSpectra(tkinter.Tk):
                                         from_ = 0,
                                         to = 50,
                                         resolution = 1,
-                                        length = 150,
+                                        length = 250,
                                         )
-        self.vmacScale.grid(row = 0, column = 2, sticky = WENS)
+        self.vmacScale.grid(row = 0, column = 2, sticky = self.WENS)
 
 
         self.vsiniScale = tkinter.Scale(self.controlFrameB,
@@ -371,7 +467,7 @@ class NormSpectra(tkinter.Tk):
                                         resolution = 1,
                                         length = 150,
                                         )
-        self.vsiniScale.grid(row = 1, column = 2, sticky = WENS)
+        self.vsiniScale.grid(row = 1, column = 2, sticky = self.WENS)
 
         self.meScale = tkinter.Scale(self.controlFrameB,
                                     variable = self.meVar,
@@ -380,9 +476,9 @@ class NormSpectra(tkinter.Tk):
                                     from_ = -1, #TODO work around low metallicity bug
                                     to = 0.3,
                                     resolution = 0.1,
-                                    # length = 30,
+                                    length = 250,
                                     )
-        self.meScale.grid(row = 0, column = 3, columnspan = 2, sticky = WENS)
+        self.meScale.grid(row = 0, column = 3, columnspan = 2, sticky = self.WENS)
 
         # self.resolutionScale = tkinter.Scale(self.controlFrameB,
         #                                 variable = self.resolution,
@@ -400,7 +496,7 @@ class NormSpectra(tkinter.Tk):
         self.resolutionLabel = tkinter.Label(self.controlFrameB,
                                              text = "resolution",
                                              )
-        self.resolutionLabel.grid(row = 1, column = 3, sticky = WENS)
+        self.resolutionLabel.grid(row = 1, column = 3, sticky = self.WENS)
 
         self.resolutionScale = tkinter.Spinbox(self.controlFrameB,
                                 textvariable = self.resolution,
@@ -409,47 +505,203 @@ class NormSpectra(tkinter.Tk):
                                 width = 7,
                                 )
         self.resolution.set(np.inf) # Must be like that :(
-        self.resolutionScale.grid(row = 1, column = 4, sticky = WENS)
+        self.resolutionScale.grid(row = 1, column = 4, sticky = self.WENS)
 
         self.bttnClearTheorSpec = tkinter.Button(self.controlFrameB,\
                                     text = "Clear\ntheoretical\nspectrum",\
                                     command = self.onClearTheoreticalSpectrum)
-        self.bttnClearTheorSpec.grid(row = 0, column = 5, rowspan = 1, sticky = WENS)
+        self.bttnClearTheorSpec.grid(row = 0, column = 5, rowspan = 1, sticky = self.WENS)
 
         self.bttnLoadTheorSpec = tkinter.Button(self.controlFrameB,\
                                     text = "Compute\ntheoretical\nspectrum",\
                                     command = self.onComputeTheoreticalSpectrum)
-        self.bttnLoadTheorSpec.grid(row = 1, column = 5, rowspan = 1, sticky = WENS)
-
-        # self.ifSaveCorrectedvrad = tkinter.IntVar()
-        # self.chButtonCorrectedVRad = tkinter.Checkbutton(self.controlFrameC,
-        #                                                 text = "Save\ncorrected\nfor\nvrad?",
-        #                                                 variable = self.ifSaveCorrectedvrad,
-        #                                                 #height = 20,
-        #                                                 )
-        # self.chButtonCorrectedVRad.grid(row = 0, column = 0, sticky = WENS)
+        self.bttnLoadTheorSpec.grid(row = 1, column = 5, rowspan = 1, sticky = self.WENS)
 
         self.ifAlreadyNormed = tkinter.IntVar()
-        self.workWithNormedSpectrum = tkinter.Checkbutton(self.controlFrameC,
+        self.workWithNormedSpectrum = tkinter.Checkbutton(self.controlFrameB,
                                                         text = "Already\nnormalised\nspectrum?",
                                                         variable = self.ifAlreadyNormed,
                                                         command = self.onAlreadyNormed,
                                                         )
-        self.workWithNormedSpectrum.grid(row = 1, column = 0, sticky = WENS)
+        self.workWithNormedSpectrum.grid(row = 0, column = 6,rowspan=2, sticky = self.WENS)
 
+    def createOutputPlotControls(self):
         self.bttnOpenSaveWindow = tkinter.Button(self.controlFrameC,\
-                                    text = "Plot\nfitted\nspectrum",\
+                                    text = "Plot fitted spectrum",\
                                     command = self.onOpenSavePlot)
-        self.bttnOpenSaveWindow.grid(row = 2, column = 0, sticky = WENS)
+        self.bttnOpenSaveWindow.grid(row = 2, column = 0, sticky = self.WENS)
 
-        # self.variables = tkinter.Text(self.controlFrameC, width = 50, height = 5,\
-        #                               wrap = tkinter.WORD,state="disabled")
-        # self.variables.pack(side=tkinter.LEFT,fill=tkinter.BOTH, expand=1)
+    def createLabelControls(self):
+        self._visibility_depth = tkinter.DoubleVar(value = 0.95)
+        self.appLogic.setLabelsThreshold(self._visibility_depth.get())
+        self.labelScale = tkinter.Scale(self.controlFrameD,
+                            variable = self._visibility_depth,
+                            orient = tkinter.HORIZONTAL,
+                            label = "Line depth",
+                            from_ = 0,
+                            to = 1,
+                            resolution = 0.01,
+                            command = self.onUpdateLabelDepth,
+                            length = 200,
+                            )
+        self.labelScale.pack(anchor="w")
 
-        self.controlFrameA.grid(row = 0, column = 0, sticky = WENS)
-        self.controlFrameB.grid(row = 0, column = 1, sticky = WENS)
-        self.controlFrameC.grid(row = 0, column = 2, sticky = WENS)
-        self.controlFrame.pack()
+    def createSpectrumNotes(self):
+
+        topframe = tkinter.Frame(self.controlFrameE)
+        topframe.pack(side=tkinter.TOP)   
+
+        self.spectrumBasenameVar = tkinter.StringVar()
+        tkinter.Label(topframe, textvariable=self.spectrumBasenameVar).pack(side=tkinter.LEFT)
+        self.spectrumBasenameVar.set("Spectrum name: " + self.appLogic.getSpectrumBaseName())
+        note_data = self.appLogic.getNoteData()
+
+        bottomframe = tkinter.Frame(self.controlFrameE)
+        bottomframe.pack(side=tkinter.BOTTOM, expand=0)  
+
+        leftbottomframe = tkinter.Frame(bottomframe)
+        leftbottomframe.pack(side=tkinter.LEFT, expand=0)
+
+        rightbottomframe = tkinter.Frame(bottomframe)
+        rightbottomframe.pack(side=tkinter.LEFT, expand=0) 
+        #-------------------------------------- TEFF
+        self.noteTeff = tkinter.StringVar()
+        self.noteTeffLabel = tkinter.Label(leftbottomframe,
+                                        text = "teff",
+                                        )
+        self.noteTeffEntry = tkinter.Entry(leftbottomframe,
+                                            textvariable = self.noteTeff,
+                                            )
+        self.noteTeff.set(note_data['teff'])
+        self.noteTeffLabel.grid(row = 1, column = 1, sticky = self.WENS)
+        self.noteTeffEntry.grid(row = 1, column = 2, sticky = self.WENS)
+        #-------------------------------------- LOGG
+        self.noteLogg = tkinter.StringVar()
+        self.noteLoggLabel = tkinter.Label(leftbottomframe,
+                                        text = "logg",
+                                        )
+        self.noteLoggEntry = tkinter.Entry(leftbottomframe,
+                                            textvariable = self.noteLogg,
+                                            )
+        self.noteLogg.set(note_data['logg'])
+        self.noteLoggLabel.grid(row = 2, column = 1, sticky = self.WENS)
+        self.noteLoggEntry.grid(row = 2, column = 2, sticky = self.WENS)
+        #-------------------------------------- ME
+        self.noteMe = tkinter.StringVar()
+        self.noteMeLabel = tkinter.Label(leftbottomframe,
+                                        text = "me",
+                                        )
+        self.noteMeEntry = tkinter.Entry(leftbottomframe,
+                                            textvariable = self.noteMe,
+                                            )
+        self.noteMe.set(note_data['me'])
+        self.noteMeLabel.grid(row = 3, column = 1, sticky = self.WENS)
+        self.noteMeEntry.grid(row = 3, column = 2, sticky = self.WENS)
+        #========================================
+        #-------------------------------------- VMIC
+        self.noteVmic = tkinter.StringVar()
+        self.noteVmicLabel = tkinter.Label(leftbottomframe,
+                                        text = "vmic",
+                                        )
+        self.noteVmicEntry = tkinter.Entry(leftbottomframe,
+                                            textvariable = self.noteVmic,
+                                            )
+        self.noteVmic.set(note_data['vmic'])
+        self.noteVmicLabel.grid(row = 1, column = 3, sticky = self.WENS)
+        self.noteVmicEntry.grid(row = 1, column = 4, sticky = self.WENS)
+        #-------------------------------------- VSINI
+        self.noteVsini = tkinter.StringVar()
+        self.noteVsiniLabel = tkinter.Label(leftbottomframe,
+                                        text = "vsini",
+                                        )
+        self.noteVsiniEntry = tkinter.Entry(leftbottomframe,
+                                            textvariable = self.noteVsini,
+                                            )
+        self.noteVsini.set(note_data['vsini'])
+        self.noteVsiniLabel.grid(row = 2, column = 3, sticky = self.WENS)
+        self.noteVsiniEntry.grid(row = 2, column = 4, sticky = self.WENS)
+        #-------------------------------------- VMAC
+        self.noteVmac = tkinter.StringVar()
+        self.noteVmacLabel = tkinter.Label(leftbottomframe,
+                                        text = "vmac",
+                                        )
+        self.noteVmacEntry = tkinter.Entry(leftbottomframe,
+                                            textvariable = self.noteVmac,
+                                            )
+        self.noteVmac.set(note_data['vmac'])
+        self.noteVmacLabel.grid(row = 3, column = 3, sticky = self.WENS)
+        self.noteVmacEntry.grid(row = 3, column = 4, sticky = self.WENS)
+
+        #======================================= Notes
+        self.noteText = tkinter.StringVar()
+        self.noteTextDisplay = tkinter.Text(rightbottomframe,height=5)
+        self.noteText.set(note_data['text_notes'])
+        self.noteTextDisplay.insert(tkinter.INSERT, self.noteText.get())        
+        self.noteTextDisplay.pack(side=tkinter.LEFT, expand=True, fill=tkinter.Y)
+
+        #======================================= SAVE NOTES BUTTON
+        self.noteSaveBttn = tkinter.Button(rightbottomframe,\
+                            text = "Save notes",\
+                            command = self.onSaveNotes)
+        self.noteSaveBttn.pack(side=tkinter.LEFT, expand=True, fill=tkinter.Y)
+
+        self.noteGetParamsBttn = tkinter.Button(rightbottomframe,\
+                            text = "Get paramters\nfrom model",\
+                            command = self.onGetParamsFromModel)
+        self.noteGetParamsBttn.pack(side=tkinter.LEFT, expand=True, fill=tkinter.Y)
+
+        self.noteSetParamsBttn = tkinter.Button(rightbottomframe,\
+                            text = "Set model\nfrom notes",\
+                            command = self.onSetModelFromNotes)
+        self.noteSetParamsBttn.pack(side=tkinter.LEFT, expand=True, fill=tkinter.Y)
+
+    def onSaveNotes(self):
+        note_data = {
+            "text_notes": self.noteTextDisplay.get("1.0",tkinter.END),
+            "teff": self.noteTeff.get(),
+            "logg": self.noteLogg.get(),
+            "me": self.noteMe.get(),
+            "vmic": self.noteVmic.get(),
+            "vsini": self.noteVsini.get(),
+            "vmac": self.noteVmac.get(),
+        }
+        self.appLogic.setNoteData(note_data)
+    
+    def updateNotesOnNewSpectrum(self):
+        self.spectrumBasenameVar.set("Spectrum name: " + self.appLogic.getSpectrumBaseName())
+        note_data = self.appLogic.getNoteData()
+
+        self.noteTeff.set(note_data['teff'])
+        self.noteLogg.set(note_data['logg'])
+        self.noteMe.set(note_data['me'])
+        self.noteVmic.set(note_data['vmic'])
+        self.noteVsini.set(note_data['vsini'])
+        self.noteVmac.set(note_data['vmac'])
+        self.noteText.set(note_data['text_notes'])
+
+        self.noteTextDisplay.delete("1.0", tkinter.END)
+        self.noteTextDisplay.insert(tkinter.INSERT, self.noteText.get())
+
+    def onGetParamsFromModel(self):
+        self.noteTeff.set(self.teffVar.get())
+        self.noteLogg.set(self.loggVar.get())
+        self.noteMe.set(self.meVar.get())
+        self.noteVmic.set(self.vmicVar.get())
+        self.noteVsini.set(self.vsiniVar.get())
+        self.noteVmac.set(self.vmacVar.get())
+
+    def onSetModelFromNotes(self):
+        self.teffVar.set(self.noteTeff.get())
+        self.loggVar.set(self.noteLogg.get())
+        self.meVar.set(self.noteMe.get())
+        self.vmicVar.set(self.noteVmic.get())
+        self.vsiniVar.set(self.noteVsini.get())
+        self.vmacVar.set(self.noteVmac.get())  
+
+    def onUpdateLabelDepth(self, value):
+        self.appLogic.setLabelsThreshold(self._visibility_depth.get())
+        self.updateLinesAnnotations()
+        self.canvas.draw()
 
     def onAlreadyNormed(self,reprint = True):
         if self.ifAlreadyNormed.get() == 1:
@@ -517,20 +769,20 @@ class NormSpectra(tkinter.Tk):
         self.bttn31.configure(bg = self.backgroundColor,activebackground=self.activeBackground)
         self.bttn22.configure(bg = self.backgroundColor,activebackground=self.activeBackground)
         if self.ifAddPoint:
-            self.span.set_visible(False)
+            self.spanNormalization.set_visible(False)
         if self.ifChooseActiveRegion:
-            self.span.set_visible(False)
+            self.spanNormalization.set_visible(False)
         if boolKeyVar:
             button.configure(bg = "#567",activebackground="#678")
         else:
-            self.span.set_visible(True)
+            self.spanNormalization.set_visible(True)
             button.configure(bg = self.backgroundColor,activebackground=self.activeBackground)
 
     def resetButtons(self):
         self.bttn21.configure(bg = self.backgroundColor,activebackground=self.activeBackground)
         self.bttn31.configure(bg = self.backgroundColor,activebackground=self.activeBackground)
         self.bttn22.configure(bg = self.backgroundColor,activebackground=self.activeBackground)
-        self.span.set_visible(True)
+        self.spanNormalization.set_visible(True)
 
     def onNextSpectrum(self):
         if self.appLogic.spectrum.name is not None:
@@ -590,6 +842,71 @@ class NormSpectra(tkinter.Tk):
                  +"Load theoretical spectra first!")
 
     def onComputeTheoreticalSpectrum(self):
+        if self.vlevel.get() == self._syntheNumber:
+            self.getTheoreticalSpectrumUsingSynthe()
+        else:
+            self.getTheoreticalSpectrumFromGrid()
+        self.updateTheoreticalSpectrumPlot()
+        self.updateLinesAnnotations()
+        if self.appLogic.theoreticalSpectrum.wave is not None and len(self.appLogic.theoreticalSpectrum.wave)!=0:
+            self.updateErrorPlot()
+        self.canvas.draw()
+    
+    def updateTheoreticalSpectrumPlot(self):
+        wave = self.appLogic.theoreticalSpectrum.wave if self.appLogic.theoreticalSpectrum.wave is not None else []
+        flux = self.appLogic.theoreticalSpectrum.flux if self.appLogic.theoreticalSpectrum.flux is not None else []
+        self.line23.set_data(wave,flux)
+
+    def updateLinesAnnotations(self):
+        for i in range(len(self.lines_annotations)): # Remove existing texts from axis and empty list
+            self.lines_annotations[-1].remove()
+            self.lines_annotations.pop()
+        self.lines_indicators.set_segments([])
+
+        if self.appLogic.theoreticalSpectrum.lines_identification is not None:
+            segments = self.appLogic.getLinesIdentification(shape=self.labelSettings.get())
+            self.lines_indicators.set_segments(segments)   
+            if self.labelSettings.get() == 1:
+                texts, positions = self.appLogic.getLabelsAndPositions()
+                for text, (x,y) in zip(texts, positions):
+                    self.lines_annotations.append(self.ax2.text(x, y, text, rotation=90, ha='right', va='bottom'))
+
+    def onHover(self, event):
+        if event.inaxes == self.ax2 and self.labelSettings.get() == 2:
+            cont, ind = self.lines_indicators.contains(event)
+            if cont :
+                self.upateAnnotation(ind, event)
+                self.line_annotation.set_visible(True)
+                self.canvas.draw()
+            else:
+                if self.line_annotation.get_visible():
+                    self.line_annotation.set_visible(False)
+                    self.canvas.draw()
+
+    def upateAnnotation(self, ind, event):
+        pos = (event.xdata, event.ydata)
+        self.line_annotation.xy = pos
+        text = "{}".format("; ".join([self.appLogic.getLineLabelText(n) for n in ind["ind"]]))
+
+        self.line_annotation.set_text(text)
+        self.line_annotation.get_bbox_patch().set_facecolor('w')
+        self.line_annotation.get_bbox_patch().set_alpha(0.9)
+
+
+    def getTheoreticalSpectrumUsingSynthe(self):
+        minWave, maxWave = self.ax1.get_xlim()
+        self.appLogic.computeSpectrumUsingSYNTHE(self.teffVar.get(),
+                                                self.loggVar.get(),
+                                                self.vmicVar.get(),
+                                                self.meVar.get(),
+                                                self.vsiniVar.get(),
+                                                self.vmacVar.get(),
+                                                float(self.resolution.get()),
+                                                minWave,
+                                                maxWave
+                                                )
+
+    def getTheoreticalSpectrumFromGrid(self):
         self.appLogic.computeTheoreticalSpectrum(self.teffVar.get(),
                                                 self.loggVar.get(),
                                                 self.vmicVar.get(),
@@ -598,17 +915,13 @@ class NormSpectra(tkinter.Tk):
                                                 self.vmacVar.get(),
                                                 float(self.resolution.get()),
                                                 )
-        wt = self.appLogic.theoreticalSpectrum.wave if self.appLogic.theoreticalSpectrum.wave is not None else []
-        ft = self.appLogic.theoreticalSpectrum.flux if self.appLogic.theoreticalSpectrum.flux is not None else []
-        self.line23.set_data(wt,ft)
-        if self.appLogic.theoreticalSpectrum.wave is not None and len(self.appLogic.theoreticalSpectrum.wave)!=0:
-            self.updateErrorPlot()
-        self.canvas.draw()
 
     def onClearTheoreticalSpectrum(self):
         self.appLogic.theoreticalSpectrum.wave = None
         self.appLogic.theoreticalSpectrum.flux = None
+        self.appLogic.theoreticalSpectrum.lines_identification = None
         self.line23.set_data([],[])
+        self.updateLinesAnnotations()
         self.updateErrorPlot()
         self.canvas.draw()
 
@@ -654,8 +967,19 @@ class NormSpectra(tkinter.Tk):
         self.ax2 = self.fig.add_subplot(gs[2:4],sharex=self.ax1)
         self.ax2.grid(True)
         self.line21,self.line22,self.line23 = self.ax2.plot([],[],'k',\
-                                                            [],[],'b',\
+                                                            [],[],'b--',\
                                                             [],[],'b')
+        self.lines_indicators = self.ax2.add_collection(LineCollection([], colors='#FF8800'))
+        self.lines_annotations = []
+        self.line_annotation = self.ax2.annotate("", xy=(0,0), 
+                                    xytext=(20,20),
+                                    # rotation=90,
+                                    textcoords="offset points",
+                                    bbox=dict(boxstyle="round", fc="w"),
+                                    arrowprops=dict(arrowstyle="->"), 
+                                    zorder=40)
+        self.line_annotation.set_visible(False)
+
         # self.ax3 = self.fig.add_subplot(313,sharex=self.ax1)
         self.ax3 = self.fig.add_subplot(gs[-1],sharex=self.ax1)
         self.ax3.grid(True)
@@ -664,13 +988,13 @@ class NormSpectra(tkinter.Tk):
 
         self.ax1.set_autoscaley_on(True)
         #self.ax2.set_autoscaley_on(False)
-        self.ax2.set_ylim([0.2,1.1])
+        self.ax2.set_ylim([0.1,2.0])
 
         box = self.ax1.get_position()
 
         self.canvas.mpl_connect('button_press_event', self.onPlotClick)
         self.canvas.mpl_connect('button_release_event', self.onPlotRealise)
-        #self.canvas.mpl_connect('motion_notify_event', self.on_motion)
+        self.canvas.mpl_connect('motion_notify_event', self.onHover)
         self.canvas.mpl_connect('key_press_event', self.onKeyPress)
         self.toolbar = NavigationToolbar(self.canvas, self.plotFrame)
         self.toolbar.update()
@@ -678,11 +1002,17 @@ class NormSpectra(tkinter.Tk):
         self.plotFrame.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
 
         #span selector
-        self.span = SpanSelector(self.ax1, self.onUsingSpanSelector,\
+        self.spanNormalization = SpanSelector(self.ax1, self.onUsingSpanSelector,\
                                  'horizontal', useblit=True,\
                                  rectprops=dict(alpha=0.5, facecolor='red'),\
                                  button=1)
-        #self.span.set_visible(False)
+
+        self.spanLinesOutput = SpanSelector(self.ax2, self.onAnalysisOutput,\
+                                 'horizontal', useblit=True,\
+                                 rectprops=dict(alpha=0.5, facecolor='blue'),\
+                                 button=1)
+
+        #self.spanNormalization.set_visible(False)
 
     def onKeyPress(self,event):
         if event.key == 'n':
@@ -730,8 +1060,6 @@ class NormSpectra(tkinter.Tk):
                 self.ifChooseActiveRegion=False
                 self.resetButtons()
 
-
-
     def onUsingSpanSelector(self,xmin, xmax):
         if self.appLogic.spectrum.wave is not None:
             if sum((self.appLogic.spectrum.wave > xmin) & (self.appLogic.spectrum.wave < xmax)) == 0:
@@ -752,6 +1080,10 @@ class NormSpectra(tkinter.Tk):
         else:
             print("WARNING: NormSpectra.onUsingSpanSelector\nLoad spectrum first")
         #self.appLogic.continuumRegionsLogic.printRegions()
+
+    def onAnalysisOutput(self, xmin, xmax):
+        self.appLogic.analysisOutput(xmin, xmax)
+        print(xmin, xmax)
 
     def replotUpdatedRanges(self,contRegionsWaveAndFlux,ifAutoscale=False):
         colorGen = self.colorGenerator()
@@ -874,7 +1206,7 @@ class radialVelocityDialog(tkinter.Toplevel):
 
     def createControls(self):
         self.controlFrame = tkinter.Frame(self)
-        WENS = tkinter.W+tkinter.E+tkinter.N+tkinter.S
+        self.WENS = tkinter.W+tkinter.E+tkinter.N+tkinter.S
 
         tkinter.Label(self.controlFrame , text="Level 1").grid(column=0, row=0)
         tkinter.Label(self.controlFrame , text="Level 2").grid(column=0, row=1)
@@ -909,7 +1241,7 @@ class radialVelocityDialog(tkinter.Toplevel):
         self.sp3.grid(column=1, row=2)
 
         reject = tkinter.Button(self.controlFrame , text="Reject", command=self.onReject)
-        reject.grid(column=0, row=3, columnspan = 2, sticky = WENS)
+        reject.grid(column=0, row=3, columnspan = 2, sticky = self.WENS)
 
         #-----------------------------------------------------------------------
 
@@ -940,10 +1272,10 @@ class radialVelocityDialog(tkinter.Toplevel):
         self.text.grid(column=4, row=0)
         self.text.insert(tkinter.END,-self.appLogicClass.radialVelocity)
         radVel = tkinter.Button(self.controlFrame, text="Compute velocity", command=self.onComputeVelocity)
-        radVel.grid(column=4, row=1, sticky = WENS)
+        radVel.grid(column=4, row=1, sticky = self.WENS)
 
         applyChanges = tkinter.Button(self.controlFrame, text="Apply correction", command=self.onApplyChanges)
-        applyChanges.grid(column=4, row=2,rowspan=2, sticky = WENS)
+        applyChanges.grid(column=4, row=2,rowspan=2, sticky = self.WENS)
         #-----------------------------------------------------------------------
 
         self.controlFrame.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)

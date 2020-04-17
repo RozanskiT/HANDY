@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-import os
+import os, sys
 import numpy as np
 import pandas as pd
 import copy
@@ -13,6 +13,12 @@ import regionLogic
 import radialVelocity
 import specInterface
 import gridDefinitionsRead
+import spectrumNote
+
+from vidmapy.kurucz.atlas import Atlas
+from vidmapy.kurucz.synthe import Synthe
+from vidmapy.kurucz.parameters import Parameters
+from vidmapy.kurucz.utility_functions import string_from_kurucz_code
 
 """
 DESCRIPTION
@@ -29,6 +35,7 @@ class normAppLogic:
         self.radialVelocityEstimator = radialVelocity.RadialVelocity()
         self.specSynthesizer = specInterface.SynthesizeSpectrum()
         self.gridDefinitions = gridDefinitionsRead.gridDefinition(gridDefinitionsFile)
+        self.spectrumNote = spectrumNote.spectrumNote()
 
         self.spectrum = sp.Spectrum()
         self.theoreticalSpectrum = sp.Spectrum(wave=[],\
@@ -39,6 +46,9 @@ class normAppLogic:
                                           flux=[])
         self.radialVelocity = 0.0
         self.oryginalWavelength = None
+
+        self.minWave = 3500
+        self.maxWave = 7000
 
 
     def readSpectrum(self,fileName,colWave=0,colFlux=1,skipRows=0):
@@ -65,10 +75,66 @@ class normAppLogic:
         self.radialVelocity = 0.0
         self.oryginalWavelength = copy.deepcopy(self.spectrum.wave)
 
+        self.spectrumNote.set_spectrum(fileName)
 
     def saveSpectrum(self,fileName):
         sp.saveSpectrum(fileName,self.spectrum)
         print("INFO : %s saved!"%fileName)
+
+    def getLinesIdentification(self, threshold=None, shape=0):
+        if threshold is not None:
+            self.setLabelsThreshold(threshold)
+        if self.theoreticalSpectrum.lines_identification is not None:
+            mask = self.theoreticalSpectrum.lines_identification["strength"] < self._lines_label_threshold
+            self._displayed_subset_of_lines = self.theoreticalSpectrum.lines_identification[mask].reset_index(drop=True)
+        return self.defineIndicatorsShapes(shape)
+
+    def setLabelsThreshold(self, threshold):
+        self._lines_label_threshold = threshold
+
+    def defineIndicatorsShapes(self, shape):
+        # lines_wavelengths = self._displayed_subset_of_lines["wave"].values
+        segments = []
+        if shape == 1:
+            self.getTextPositions()
+            segments = [self.getSegment(row) for idx, row in self._displayed_subset_of_lines.iterrows()]
+        elif shape == 2:
+            segments = [self.getSimpleSegment(row) for idx, row in self._displayed_subset_of_lines.iterrows()]
+        return segments
+
+
+    def getTextPositions(self):
+        self._displayed_subset_of_lines['text_x'] = np.linspace(self._displayed_subset_of_lines['wave'].min(),
+                                                        self._displayed_subset_of_lines['wave'].max(),
+                                                        num=len(self._displayed_subset_of_lines))   
+
+    def getSegment(self, row):
+        x = row['wave']
+        depth = row['strength']
+        text_x = row['text_x']
+        segment = ((x,depth),(x, 1.0), (text_x, 1.1), (text_x, 2.1 - depth))
+        return segment
+    
+    def getSimpleSegment(self, row):
+        x = row['wave']
+        depth = row['strength']
+        segment = ((x,depth),(x, 1.05))
+        return segment     
+
+    def getLabelsAndPositions(self):
+        if not 'text_x' in self._displayed_subset_of_lines:
+            self.getTextPositions()
+        positions = [(x, 1.1) for x in self._displayed_subset_of_lines['text_x']]
+        texts = [self.getLineLabelTextIterrows(row) for idx, row in self._displayed_subset_of_lines.iterrows()]
+        return texts, positions
+    
+    def getLineLabelTextIterrows(self, row):
+        text = "{} {:.1f} {:.2f}".format(string_from_kurucz_code(row["atom_symbol"]), row["wave"],row["strength"])
+        return text
+
+    def getLineLabelText(self, index):
+        row = self._displayed_subset_of_lines.loc[index,:]
+        return self.getLineLabelTextIterrows(row)
 
     def readTheoreticalSpectrum(self,fileName,colWave=0,colFlux=1,skipRows=0):
         self.theoreticalSpectrum = sp.readSpectrum(fileName,\
@@ -81,9 +147,51 @@ class normAppLogic:
         # There was a bug - sometimes data from TKinter comes as string, so:
         parameters = [p if p is not str else float(p.replace(",","."))for p in parameters]
         try:
-            self.theoreticalSpectrum = self.specSynthesizer.synthesizeSpectrum(parameters,minWave = 3500, maxWave = 7000)
+            self.theoreticalSpectrum = self.specSynthesizer.synthesizeSpectrum(parameters,
+                                            minWave = self.minWave, 
+                                            maxWave = self.maxWave)
         except:
+            print("Unexpected error:", sys.exc_info()[0])
             print("Spectrum out of grid or some interpolation bug...")
+
+    def computeSpectrumUsingSYNTHE(self,teff,logg,vmic,me,vsini,vmac,resolution,minWave=None,maxWave=None):
+        resolution = min(resolution, 500000)
+        if minWave is None:
+            minWave = self.minWave
+        if maxWave is None:
+            maxWave = self.maxWave
+        parameters = Parameters(teff=teff, 
+                                logg=logg, 
+                                metallicity=me, 
+                                microturbulence=vmic,
+                                vsini=vsini,
+                                resolution=resolution,
+                                wave_min=minWave,
+                                wave_max=maxWave)
+        try:
+            if not (hasattr(self, '_atlas_model') and self._atlas_model.parameters == parameters):
+                print("Start ATLAS model computation")
+                atlasWorker = Atlas()
+                self._atlas_model = atlasWorker.get_model(parameters)
+                print("ALTAS model computation finished")
+
+            syntheWorker = Synthe()
+            print("Start SYNTHE spectrum computation")
+            spectrum = syntheWorker.get_spectrum(self._atlas_model, parameters)
+            print("SYNTHE spectrum computation finished")
+
+            mask_wave = (spectrum.lines_identification['wave'] > minWave) & (spectrum.lines_identification['wave'] < maxWave)
+            spectrum.lines_identification = spectrum.lines_identification[mask_wave]
+            spectrum.lines_identification.sort_values('wave', inplace=True)
+
+            self.theoreticalSpectrum = sp.Spectrum(wave=spectrum.wave, 
+                                                    flux=spectrum.normed_flux, 
+                                                    lines_identification=spectrum.lines_identification)
+        except:
+            print("ERROR: SYNTHE/ATLAS error!")
+            print("Unexpected error:", sys.exc_info()[0])
+
+        
 
     def saveNormedSpectrum(self,fileName,correctForRadialVelocity):
         saveSpectrum = copy.deepcopy(self.normedSpectrum)
@@ -203,6 +311,24 @@ class normAppLogic:
 
     def updateOrderOfActiveRegion(self,order):
         self.continuumRegionsLogic.setOrderOfActiveRegion(order)
+
+    def analysisOutput(self, waveMin, waveMax):
+        # TODO: Code routine that Ewa needs
+        pass
+
+    def getSpectrumBaseName(self):
+        spectrumBaseName = ""
+        if self.spectrum.name is not None:
+            spectrumBaseName = os.path.basename(self.spectrumNote.spectrum_path)
+        return spectrumBaseName
+
+    def getNoteData(self):
+        noteDataDict = self.spectrumNote.get_note_data()
+        return noteDataDict
+
+    def setNoteData(self, noteDataDict):
+        self.spectrumNote.set_from_dict(noteDataDict)
+
 
 ################################################################################
 ### TESTS
