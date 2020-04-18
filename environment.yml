@@ -9,5 +9,6 @@ dependencies:
 - scipy
 - astropy
 - pyyaml
+- pip
 - pip:
   - PyAstronomy
