@@ -323,9 +323,9 @@ class NormSpectra(tkinter.Tk):
 
         self.controlNote.add(self.controlFrameA, text = "Controls")
         self.controlNote.add(self.controlFrameB, text = "Model")
-        self.controlNote.add(self.controlFrameC, text = "Plot")
         self.controlNote.add(self.controlFrameD, text = "Labels")
         self.controlNote.add(self.controlFrameE, text = "Notes")
+        self.controlNote.add(self.controlFrameC, text = "Plot")
 
         self.controlNote.pack(fill=tkinter.BOTH, expand=0)
 
@@ -526,7 +526,7 @@ class NormSpectra(tkinter.Tk):
         self.bttnOpenSaveWindow = tkinter.Button(self.controlFrameC,\
                                     text = "Plot fitted spectrum",\
                                     command = self.onOpenSavePlot)
-        self.bttnOpenSaveWindow.grid(row = 2, column = 0, sticky = self.WENS)
+        self.bttnOpenSaveWindow.pack(side=tkinter.TOP, fill=tkinter.Y)
 
     def createLabelControls(self):
         self._visibility_depth = tkinter.DoubleVar(value = 0.95)
@@ -541,7 +541,7 @@ class NormSpectra(tkinter.Tk):
                             command = self.onUpdateLabelDepth,
                             length = 200,
                             )
-        self.labelScale.pack(anchor="w")
+        self.labelScale.pack(side=tkinter.TOP, fill=tkinter.Y)
 
     def createSpectrumNotes(self):
 
