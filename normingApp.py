@@ -175,7 +175,7 @@ class NormSpectra(tkinter.Tk):
         self.teffScale['from_'], self.teffScale['to'] = 4000, 35000
         self.loggScale['from_'], self.loggScale['to'] = 2.0, 6.0
         self.vmicScale['from_'], self.vmicScale['to'] = 0.0, 15.0
-        self.meScale['from_'], self.meScale['to'] = -3.0, 0.6
+        self.meScale['from_'], self.meScale['to'] = -3.0, 3.0
 
     def onCheckLabelSettings(self):
         self.updateLinesAnnotations()
