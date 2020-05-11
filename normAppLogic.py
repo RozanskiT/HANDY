@@ -274,7 +274,7 @@ class normAppLogic:
             for w,f in region:
                 wReg.extend(w)
                 fReg.extend(f)
-            wRegOut = np.linspace(wReg[0],wReg[-1],max((wReg[-1]-wReg[0])/separation,1))
+            wRegOut = np.linspace(wReg[0],wReg[-1],int(max((wReg[-1]-wReg[0])/separation,1)))
             try:
                 fRegOut = self.fitFunction(wReg,fReg,wRegOut,1,ord)
             except Exception as e:
