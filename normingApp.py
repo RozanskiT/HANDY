@@ -36,6 +36,7 @@ class NormSpectra(tkinter.Tk):
         self.numberOfActiveRegion = 0
 
         self.radVelDialog = None
+        self.periodicTableDialog = None
 
         self.fileList = []
 
@@ -165,7 +166,7 @@ class NormSpectra(tkinter.Tk):
 
     def onChooseSYNTHE(self):
         setVal = {True: 'normal', False: 'disabled'}
-        self.vmacScale['state'] = setVal[False]
+        self.vmacScale['state'] = setVal[False] # missing in vidmapy!
         self.vsiniScale['state'] = setVal[True]
         self.teffScale['state'] = setVal[True]
         self.loggScale['state'] = setVal[True]
@@ -173,7 +174,7 @@ class NormSpectra(tkinter.Tk):
         self.meScale['state'] = setVal[True]
 
         self.teffScale['from_'], self.teffScale['to'] = 4000, 35000
-        self.loggScale['from_'], self.loggScale['to'] = 2.0, 6.0
+        self.loggScale['from_'], self.loggScale['to'] = 0.5, 6.0
         self.vmicScale['from_'], self.vmicScale['to'] = 0.0, 15.0
         self.meScale['from_'], self.meScale['to'] = -3.0, 3.0
 
@@ -523,7 +524,15 @@ class NormSpectra(tkinter.Tk):
                                                         variable = self.ifAlreadyNormed,
                                                         command = self.onAlreadyNormed,
                                                         )
-        self.workWithNormedSpectrum.grid(row = 0, column = 6,rowspan=2, sticky = self.WENS)
+        self.workWithNormedSpectrum.grid(row = 0, column = 6,rowspan=1, sticky = self.WENS)
+
+        self.workWithNormedSpectrum = tkinter.Button(self.controlFrameB,
+                                                    text = "Periodic table",
+                                                    # variable = self.ifAlreadyNormed,
+                                                    command = self.onPeriodicTableDialog,
+                                                    state = tkinter.DISABLED,
+                                                    )
+        self.workWithNormedSpectrum.grid(row = 1, column = 6,rowspan=1, sticky = self.WENS)
 
     def createOutputPlotControls(self):
         self.bttnOpenSaveWindow = tkinter.Button(self.controlFrameC,\
@@ -840,6 +849,13 @@ class NormSpectra(tkinter.Tk):
         else:
             print("WARNING:NormSpectra.onRadialVelocity\n"\
                  +"Load theoretical spectra first!")
+
+    def onPeriodicTableDialog(self):
+        if self.periodicTableDialog is None:
+            print("xxx")
+            self.periodicTableDialog = PeriodicTableDialog(self.appLogic, self.onClosePeriodicTableDialog)
+            print("xxx")
+            self.periodicTableDialog.wm_protocol('WM_DELETE_WINDOW', lambda: self.onClosePeriodicTableDialog())
 
     def onComputeTheoreticalSpectrum(self):
         if self.vlevel.get() == self._syntheNumber:
@@ -1174,6 +1190,13 @@ class NormSpectra(tkinter.Tk):
         self.radVelDialog = None
         #print("WORKS")
 
+    def onClosePeriodicTableDialog(self):
+        if True:
+            pass # TODO implement needed actions!
+        self.periodicTableDialog.destroy()
+        self.periodicTableDialog = None
+        pass
+
 
 class radialVelocityDialog(tkinter.Toplevel):
     def __init__(self,appLogicClass,closeFunction):
@@ -1335,7 +1358,64 @@ class radialVelocityDialog(tkinter.Toplevel):
         self.close()
         #self.destroy()
 
+class PeriodicTableDialog(tkinter.Toplevel):
+    def __init__(self, appLogicClass, closeFunction):
+        tkinter.Toplevel.__init__(self)
 
+        self.appLogicClass = appLogicClass
+
+        self.close = closeFunction
+        self.createPeriodicTable()
+
+    def createPeriodicTable(self):
+        self.controlFrame = tkinter.Frame(self)#,bg="dark green")
+        self.WENS = tkinter.W+tkinter.E+tkinter.N+tkinter.S
+
+        self.elementsFrames = []
+        for atomic_number,elementName in self.appLogicClass.getElementsList():
+            self.elementsFrames.append(ElementFrame(self.controlFrame, atomic_number, elementName,background="dark green", borderwidth = 1))
+            column, row = self.arrangement(atomic_number-1)
+            self.elementsFrames[-1].grid(column=column, row=row, sticky=self.WENS)
+            self.controlFrame.grid_columnconfigure(column, weight=1)
+            self.controlFrame.grid_rowconfigure(row, weight=1)
+        self.controlFrame.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+
+    def arrangement(self, atomic_number):
+        i = atomic_number + (atomic_number>=1)*30 \
+                + (atomic_number>=4)*24 \
+                + (atomic_number>=12)*24 \
+                + (atomic_number>=20)*14 \
+                + (atomic_number>=38)*14
+        col = i%32
+        row = i//32
+        return col, row
+
+    def get_abundances(self):
+        relative_abundances = {elem.atomicNumber : elem.getAbundance() for elem in self.elementsFrames}
+        return {}
+
+class ElementFrame(tkinter.Frame):
+    def __init__(self, master, atomicNumber, elementName, *args, **kwargs):
+        tkinter.Frame.__init__(self, master, *args, **kwargs)
+
+        self.atomicNumber = atomicNumber
+        self.elementName = elementName
+        self.createLayout()
+
+    def createLayout(self):
+        tkinter.Label(self, text=f"{self.elementName}").pack(side=tkinter.TOP, expand=True, fill='both')
+        tkinter.Label(self, text=f"{self.atomicNumber}").pack(side=tkinter.TOP, expand=True, fill='both')
+        self.abundanceEntry = tkinter.Entry(self)
+        # float(self.abundanceEntry.get())
+        self.abundanceEntry.insert(tkinter.END, 0.0)
+        self.abundanceEntry.pack(side=tkinter.TOP, expand=True, fill='both')
+
+    def setAbundance(self, abundance):
+        self.abundanceEntry.insert(tkinter.END, abundance)
+
+    def getAbundance(self):
+        return float(self.abundanceEntry.get())
+        
 def main():
 
     app=NormSpectra()

@@ -19,6 +19,7 @@ from vidmapy.kurucz.atlas import Atlas
 from vidmapy.kurucz.synthe import Synthe
 from vidmapy.kurucz.parameters import Parameters
 from vidmapy.kurucz.utility_functions import string_from_kurucz_code
+from vidmapy.kurucz.parameters import _reference_composition
 
 """
 DESCRIPTION
@@ -49,6 +50,8 @@ class normAppLogic:
 
         self.minWave = 3500
         self.maxWave = 7000
+
+        self.loadReferenceComposition(_reference_composition)
 
 
     def readSpectrum(self,fileName,colWave=0,colFlux=1,skipRows=0):
@@ -328,6 +331,19 @@ class normAppLogic:
 
     def setNoteData(self, noteDataDict):
         self.spectrumNote.set_from_dict(noteDataDict)
+
+    def loadReferenceComposition(self, referenceComposition):
+        self.referenceComposition = copy.deepcopy(referenceComposition)
+        # _reference_composition = [
+        # [  1, 0.9204 , 'H' , 'Hydrogen'],
+        # [  2, 0.07834, 'He', 'Helium'], ...
+
+    def getElementsList(self):
+        return [(x[0],x[2]) for x in self.referenceComposition]
+
+    def relativeToAbsoluteAbundances(self, relativeAbundances):
+        pass
+
 
 
 ################################################################################
