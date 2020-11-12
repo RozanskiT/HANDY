@@ -12,7 +12,7 @@
 ### Prerequisites
 
 * Python3
-* Conda - usefull but not necessary
+* Conda - recommended but not necessary
 
 ### Download
 
@@ -23,22 +23,17 @@ Two steps:
     git clone https://github.com/RozanskiT/HANDY.git
     ```
   - Download zip from:
-  [HANDY.zip](https://github.com/RozanskiT/HANDY/archive/master.zip)
-* Download and untar folders with grids in your project catalog
-  - Can be downloaded from : [Availible grids](https://drive.google.com/open?id=1VH5hQ5toTWuPFA_6vIpD1aZxs6u0nmia)
-  
-  It is a very good idea to create special directory with grids (eg. ~/grids/), keep all needed grids there, and only links those folders to HANDY main directory by:
-    ```
-    ln -s ~/grids/gridDirectoryName ~/path/to/HANDY/gridDirectoryName
-    ```
-  
-### Installing
+  [HANDY-master.zip](https://github.com/RozanskiT/HANDY/archive/master.zip)
+* Download and untar folders with grids in your project catalog, eg. `~/repos/HANDY/`
+  - Can be downloaded from : [Grids](https://drive.google.com/open?id=1VH5hQ5toTWuPFA_6vIpD1aZxs6u0nmia)
 
+### Installing
+### HANDY
 You need Python3 with all needed packages.
 
 The easiest way to work with HANDY is with [Conda enviroment manager](https://conda.io/docs/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file):
 
-Run in HANDY catalog:
+Run in HANDY catalog, eg. `~/repos/HANDY/`:
 ```
 conda env create -f environment.yml
 ```
@@ -50,10 +45,33 @@ Verify if enviroment is installed correctly:
 ```
 conda list
 ```
+### VidmaPy
+
+Now you have to clone submodule VidmaPy by calling (from HANDY catalogue):
+```
+git submodule update --init
+```
+It should clone the vidmapy in to HANDY/vidmapy. The next step is the installation of VidmaPy that enable HANDY to use ATLAS/SYNTHE. To install the vidmapy in HANDY-env environment (you want that), you need to follow the description from VidmaPy [README](https://github.com/RozanskiT/vidmapy).
+
+Shortly speaking:
+
+* download [atomic data](https://drive.google.com/drive/folders/1H-lFH69fyWvwWydgO8uBS3TIAdZ9hWdc?usp=sharing) and place in directory (three distinct directories: ODF, molecules, and lines):
+```
+HANDY-extended/vidmapy/vidmapy/kurucz/atomic_data/
+```
+* run from HANDY/vidmapy directory:
+```
+pip install .
+```
+
+### Finally
+
 After that you may want to make symbolic link in your ~/bin/ directory to HANDY.sh file to be able to easly run the program in whole system. Eg. on my system:
 ```
 ln -s ~/repos/HANDY/HANDY.sh ~/bin/HANDY
 ```
+
+
 Then you should be able to simply run the program by executing:
 ```
 HANDY
