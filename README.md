@@ -30,7 +30,7 @@ HANDY is interactive Python3 program for spectrum normalization. The normalizati
 ### Prerequisites
 
 * Python3
-* Conda - usefull but not necessary
+* Conda - recommended but not necessary
 
 ### Download
 
