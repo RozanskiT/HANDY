@@ -43,7 +43,7 @@ Two steps:
     ```
   - Download zip from:
   [HANDY-master.zip](https://github.com/RozanskiT/HANDY/archive/master.zip)
-* Download and untar folders with grids in your project catalog
+* Download and untar folders with grids in your project catalog, eg. `~/repos/HANDY/`
   - Can be downloaded from : [Grids](https://drive.google.com/open?id=1VH5hQ5toTWuPFA_6vIpD1aZxs6u0nmia)
 
 ### Installing
@@ -52,7 +52,7 @@ You need Python3 with all needed packages.
 
 The easiest way to work with HANDY is with [Conda enviroment manager](https://conda.io/docs/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file):
 
-Run in HANDY catalog:
+Run in HANDY catalog, eg. `~/repos/HANDY/`:
 ```
 conda env create -f environment.yml
 ```
@@ -66,11 +66,11 @@ conda list
 ```
 ### VidmaPy
 
-Now you have to clone submodule VidmaPy by calling (from HANDY-extended catalogue):
+Now you have to clone submodule VidmaPy by calling (from HANDY catalogue):
 ```
 git submodule update --init
 ```
-It should clone the vidmapy in to HANDY/vidmapy. The next step is the installation of VidmaPy that enable HANDY to use ATLAS/SYNTHE. To install the vidmapy in HANDY-env-ext environment (you want that), you need to follow the description from VidmaPy [README](https://github.com/RozanskiT/vidmapy).
+It should clone the vidmapy in to HANDY/vidmapy. The next step is the installation of VidmaPy that enable HANDY to use ATLAS/SYNTHE. To install the vidmapy in HANDY-env environment (you want that), you need to follow the description from VidmaPy [README](https://github.com/RozanskiT/vidmapy).
 
 Shortly speaking:
 
