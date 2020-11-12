@@ -20,6 +20,7 @@ HANDY is interactive Python3 program for spectrum normalization. The normalizati
 * Portability of continuum ranges between different spectra
 * Easy access to precomputed grid of NLTE stars spectra (computed with SYNSPEC, with use of BSTAR2006 models)
   - NLTE line blanketed model atmospheres of hot stars. I. Hybrid Complete Linearization/Accelerated Lambda Iteration Method, 1995, Hubeny, I., & Lanz, T., Astrophysical Journal, 439, 875
+* Easy access to ATLAS/SYNTHE (Kurucz,R.L., 1993) code via [VidmaPy](https://github.com/RozanskiT/vidmapy) package. Used precompiled codes and works only under Linux.
 * Adding user defined grids
 * Radial velocity correction
 * Developed and tested on Linux
